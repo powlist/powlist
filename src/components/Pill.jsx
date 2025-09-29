@@ -13,7 +13,7 @@ const Pill = ({
   const contentRef = useRef(null)
   const pillRef = useRef(null)
   
-  const baseClasses = "inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-full transition-colors duration-200"
+  const baseClasses = "inline-flex items-center gap-1 px-3 py-1 text-sm rounded-full transition-colors duration-200"
   
   const variants = {
     default: "text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300",

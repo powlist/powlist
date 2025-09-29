@@ -12,7 +12,6 @@ const SuggestionBox = ({
 
   return (
     <div className={`mx-1 mb-2 mt-1 ${className}`}>
-      <div className="text-xs font-medium text-gray-500 mb-2">Suggestion:</div>
       <div className="bg-gray-100 rounded-xl p-3">
         <div className="text-sm text-gray-600 leading-relaxed mb-3">
           {suggestion}

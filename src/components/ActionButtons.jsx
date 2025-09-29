@@ -8,10 +8,10 @@ const ActionButtons = ({
   onSend,
   className = ''
 }) => {
-  const plusIcon = (
+  const attachmentIcon = (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-gray-500">
       <path 
-        d="M12 5V19M5 12H19" 
+        d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.64 16.2a2 2 0 0 1-2.83-2.83l8.49-8.49" 
         stroke="currentColor" 
         strokeWidth="2" 
         strokeLinecap="round" 
@@ -28,20 +28,22 @@ const ActionButtons = ({
 
   return (
     <div className={`flex items-center justify-between ${className}`}>
-      <div className="flex items-center gap-2">
-        {/* Plus button - always visible */}
+      <div className="flex items-center gap-1">
+        {/* Attachment button - always visible */}
         <Button 
-          icon={plusIcon}
+          icon={attachmentIcon}
           variant="ghost"
           disabled={disabled}
+          size='sm'
         />
         
         {/* Refine button - only show when there's content */}
         {hasContent && (
           <button 
-            className="px-3 py-1.5 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            className="px-3 py-1.5 text-sm text-gray-600  hover:bg-gray-100 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
             onClick={onRefine}
             disabled={disabled}
+            variant="ghost"
             type="button"
           >
             Refine prompt

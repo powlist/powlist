@@ -322,7 +322,7 @@ const PromptInput = ({
         className={`
           bg-white shadow-sm border border-gray-200 
           flex flex-col gap-3 transition-all duration-200 
-          relative p-3 px-4 sm:p-4 sm:px-5
+          relative p-3 sm:p-4 
           hover:border-gray-300 hover:shadow-md
           ${isFocused ? 'border-blue-500 shadow-md' : ''} 
           ${disabled ? 'opacity-60 cursor-not-allowed hover:border-gray-200 hover:shadow-sm' : ''}
@@ -331,10 +331,10 @@ const PromptInput = ({
         onClick={handleContainerClick}
       >
       {/* Add context button row */}
-      <div className="flex items-center mb-2 gap-2 flex-wrap">
+      <div className="flex items-center mb-2 gap-1 flex-wrap">
         <button 
           className={`flex items-center gap-1 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-all duration-200 hover:border-gray-300 ${
-            selectedContexts.length > 0 ? 'w-8 h-8 justify-center items-center' : 'px-3 py-1.5'
+            selectedContexts.length > 0 ? 'w-8 h-8 justify-center items-center' : 'px-3 py-1'
           }`}
           type="button"
           onClick={handleContextClick}
@@ -376,7 +376,7 @@ const PromptInput = ({
       />
       
       {/* Message text area */}
-      <div className="flex-1 flex items-start relative min-h-[24px] py-2">
+      <div className="flex-1 flex items-start relative min-h-[24px] px-2 py-1.5">
         <textarea
           ref={textareaRef}
           value={value}
