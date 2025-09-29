@@ -1,4 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react'
+import Pill from './Pill'
+import Button from './Button'
+import ContextPopover from './ContextPopover'
+import SuggestionBox from './SuggestionBox'
+import ActionButtons from './ActionButtons'
 
 const PromptInput = ({ 
   placeholder = "Message Product builder...", 
@@ -27,7 +32,6 @@ const PromptInput = ({
   const [systemContext] = useState('Electronics') // System-defined context based on permissions
   const textareaRef = useRef(null)
   const typingTimeoutRef = useRef(null)
-  const popoverRef = useRef(null)
   const pillRefs = useRef({})
 
 
@@ -179,22 +183,6 @@ const PromptInput = ({
   }, [selectedContexts, pillWidths])
 
 
-  // Handle click outside to close popover
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (popoverRef.current && !popoverRef.current.contains(event.target)) {
-        setShowContextPopover(false)
-      }
-    }
-
-    if (showContextPopover) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [showContextPopover])
 
   const handleChange = (e) => {
     setValue(e.target.value)
@@ -305,8 +293,16 @@ const PromptInput = ({
           typeSuggestion(newSuggestion)
         }, 200)
       } else {
-        setShowSuggestion(false)
-        setDisplayedSuggestion('')
+        // If no specific suggestion found, provide a generic refinement
+        const genericSuggestion = `Refine and expand on: "${value.trim()}". Provide more specific details, context, and actionable steps to make this request more comprehensive and effective.`
+        setSuggestion(genericSuggestion)
+        setShowSuggestion(true)
+        setSuggestionAccepted(false)
+        
+        // Start typing animation after a short delay
+        typingTimeoutRef.current = setTimeout(() => {
+          typeSuggestion(genericSuggestion)
+        }, 200)
       }
     }
   }
@@ -348,79 +344,36 @@ const PromptInput = ({
         </button>
         
         {/* System context pill - always shown, disabled */}
-        <div className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-400 bg-gray-100 border border-gray-200 rounded-full cursor-not-allowed opacity-75">
-          <span className="text-gray-400 text-sm">@</span>
-          <span className="truncate text-sm">{systemContext}</span>
-        </div>
+        <Pill variant="system" disabled>
+          {systemContext}
+        </Pill>
         
         {/* User-selected context pills */}
         {selectedContexts.map((context, index) => (
-          <div
+          <Pill
             key={index}
             ref={(el) => { pillRefs.current[index] = el }}
-            className="group relative inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-full transition-all duration-200 hover:bg-gray-100 hover:border-gray-300"
+            variant="removable"
+            showRemove
+            onRemove={() => handleRemoveContext(context)}
             style={{
               width: pillWidths[index] ? `${pillWidths[index]}px` : 'auto'
             }}
           >
-            <span className="text-gray-500 text-sm">@</span>
-            <span className="truncate flex-1 min-w-0 text-sm">{context}</span>
-            <button
-              onClick={() => handleRemoveContext(context)}
-              className="hidden w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all duration-200 group-hover:flex bg-white rounded-full hover:bg-gray-100 shadow-sm border border-gray-200 flex-shrink-0"
-              type="button"
-            >
-              <svg width="8" height="8" viewBox="0 0 24 24" fill="none">
-                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-          </div>
+            {context}
+          </Pill>
         ))}
       </div>
 
       {/* Context Popover */}
-      {showContextPopover && (
-        <div 
-          ref={popoverRef}
-          className="absolute top-16 left-0 z-50 w-80 bg-white border border-gray-200 rounded-xl shadow-lg"
-        >
-          {/* Search input */}
-          <div className="p-3 border-b border-gray-100">
-            <input
-              type="text"
-              placeholder="Search context..."
-              value={contextSearch}
-              onChange={handleContextSearch}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              autoFocus
-            />
-          </div>
-          
-          {/* Recent items list */}
-          <div className="max-h-60 overflow-y-auto">
-            {filteredItems.length > 0 ? (
-              filteredItems.map((item, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleContextItemSelect(item)}
-                  className="w-full px-3 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors duration-150"
-                >
-                  <div className="flex items-center gap-3">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-400 flex-shrink-0">
-                      <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <span className="truncate text-sm">{item}</span>
-                  </div>
-                </button>
-              ))
-            ) : (
-              <div className="px-3 py-1.5 text-center text-sm text-gray-500">
-                {contextSearch ? 'No items found' : 'No recent items'}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <ContextPopover
+        isOpen={showContextPopover}
+        onClose={() => setShowContextPopover(false)}
+        items={filteredItems}
+        onItemSelect={handleContextItemSelect}
+        searchValue={contextSearch}
+        onSearchChange={handleContextSearch}
+      />
       
       {/* Message text area */}
       <div className="flex-1 flex items-start relative min-h-[24px] py-2">
@@ -440,82 +393,21 @@ const PromptInput = ({
       </div>
       
       {/* Suggestion box - separate div between text and buttons */}
-      {showSuggestion && (
-        <div className="mx-1 mb-2 mt-1">
-          <div className="text-xs font-medium text-gray-500 mb-2">Suggestion:</div>
-          <div className="bg-gray-100 rounded-xl p-3">
-            <div className="text-sm text-gray-600 leading-relaxed mb-3">
-              {displayedSuggestion}
-            </div>
-            {!isTyping && (
-              <div className="flex items-center justify-end gap-2">
-                <button
-                  onClick={handleDismissSuggestion}
-                  className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 transition-colors duration-200"
-                >
-                  Dismiss
-                </button>
-                <button
-                  onClick={handleAcceptSuggestion}
-                  className="px-3 py-1.5 text-sm text-white bg-gray-500 hover:bg-gray-600 rounded-lg shadow-sm transition-all duration-200"
-                >
-                  Accept
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <SuggestionBox
+        isVisible={showSuggestion}
+        suggestion={displayedSuggestion}
+        isTyping={isTyping}
+        onAccept={handleAcceptSuggestion}
+        onDismiss={handleDismissSuggestion}
+      />
       
       {/* Actions row */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {/* Plus button - always visible */}
-          <button 
-            className="border-none rounded-full w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center cursor-pointer transition-all duration-200 flex-shrink-0 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-            type="button"
-            disabled={disabled}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-gray-500">
-              <path 
-                d="M12 5V19M5 12H19" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          
-          {/* Refine button - only show when there's content */}
-          {hasContent && (
-            <button 
-              className="px-3 py-1.5 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleRefine}
-              disabled={disabled}
-              type="button"
-            >
-              Refine prompt
-            </button>
-          )}
-        </div>
-        
-        {/* Send button - always show */}
-        <button 
-          className={`border-none rounded-full w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center cursor-pointer transition-all duration-200 flex-shrink-0 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
-            hasContent 
-              ? 'bg-blue-500 hover:bg-blue-600' 
-              : 'bg-gray-300 hover:bg-gray-400'
-          }`}
-          onClick={handleSend}
-          disabled={disabled || !hasContent}
-          type="button"
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path fillRule="evenodd" clipRule="evenodd" d="M9.46967 2.59467C9.76256 2.30178 10.2374 2.30178 10.5303 2.59467L16.1553 8.21967C16.4482 8.51256 16.4482 8.98744 16.1553 9.28033C15.8624 9.57322 15.3876 9.57322 15.0947 9.28033L10.75 4.93566V16.875C10.75 17.2892 10.4142 17.625 10 17.625C9.58579 17.625 9.25 17.2892 9.25 16.875V4.93566L4.90533 9.28033C4.61244 9.57322 4.13756 9.57322 3.84467 9.28033C3.55178 8.98744 3.55178 8.51256 3.84467 8.21967L9.46967 2.59467Z" fill="white"/>
-          </svg>
-        </button>
-      </div>
+      <ActionButtons
+        hasContent={hasContent}
+        disabled={disabled}
+        onRefine={handleRefine}
+        onSend={handleSend}
+      />
       </div>
     </div>
   )
