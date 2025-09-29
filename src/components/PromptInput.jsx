@@ -140,44 +140,15 @@ const PromptInput = ({
     return typeInterval
   }
 
-  // Handle input change and suggestion generation - real-time adaptation
+  // Reset suggestion state when input changes
   useEffect(() => {
-    // Clear any existing typing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
-
     // Reset suggestion state if input is empty
     if (value.trim().length === 0) {
       setSuggestionAccepted(false)
-    }
-
-    // Don't show suggestions if user has already accepted one
-    if (suggestionAccepted) {
-      setShowSuggestion(false)
-      setDisplayedSuggestion('')
-      return
-    }
-
-    if (value.trim().length >= 3) {
-      const newSuggestion = generateSuggestion(value)
-      if (newSuggestion) {
-        setSuggestion(newSuggestion)
-        setShowSuggestion(true)
-        
-        // Start typing animation after a short delay
-        typingTimeoutRef.current = setTimeout(() => {
-          typeSuggestion(newSuggestion)
-        }, 200)
-      } else {
-        setShowSuggestion(false)
-        setDisplayedSuggestion('')
-      }
-    } else {
       setShowSuggestion(false)
       setDisplayedSuggestion('')
     }
-  }, [value, suggestionAccepted])
+  }, [value])
 
   // Cleanup typing timeout on unmount
   useEffect(() => {
@@ -263,6 +234,16 @@ const PromptInput = ({
     }
   }
 
+  const handleKeyDown = (e) => {
+    // Cmd+Shift+Enter to trigger refine
+    if (e.key === 'Enter' && e.metaKey && e.shiftKey) {
+      e.preventDefault()
+      if (hasContent) {
+        handleRefine()
+      }
+    }
+  }
+
   const handleAcceptSuggestion = () => {
     setValue(suggestion)
     setShowSuggestion(false)
@@ -311,6 +292,25 @@ const PromptInput = ({
     setSelectedContexts(prev => prev.filter(item => item !== itemToRemove))
   }
 
+  const handleRefine = () => {
+    if (value.trim().length >= 3) {
+      const newSuggestion = generateSuggestion(value)
+      if (newSuggestion) {
+        setSuggestion(newSuggestion)
+        setShowSuggestion(true)
+        setSuggestionAccepted(false)
+        
+        // Start typing animation after a short delay
+        typingTimeoutRef.current = setTimeout(() => {
+          typeSuggestion(newSuggestion)
+        }, 200)
+      } else {
+        setShowSuggestion(false)
+        setDisplayedSuggestion('')
+      }
+    }
+  }
+
 
   const isEmpty = value.trim() === ''
   const hasContent = value.trim().length > 0
@@ -338,19 +338,19 @@ const PromptInput = ({
       <div className="flex items-center mb-2 gap-2 flex-wrap">
         <button 
           className={`flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-all duration-200 hover:border-gray-300 ${
-            selectedContexts.length > 0 ? 'px-1.5 w-8 h-8 justify-center' : ''
+            selectedContexts.length > 0 ? 'px-3 py-1.5 justify-center' : ''
           }`}
           type="button"
           onClick={handleContextClick}
         >
-          <span className="text-gray-500 font-medium">@</span>
-          {selectedContexts.length === 0 && <span>Add context</span>}
+          <span className="text-gray-500 text-sm">@</span>
+          {selectedContexts.length === 0 && <span className="text-sm">Add context</span>}
         </button>
         
         {/* System context pill - always shown, disabled */}
         <div className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-400 bg-gray-100 border border-gray-200 rounded-full cursor-not-allowed opacity-75">
-          <span className="text-gray-400 font-medium">@</span>
-          <span className="truncate">{systemContext}</span>
+          <span className="text-gray-400 text-sm">@</span>
+          <span className="truncate text-sm">{systemContext}</span>
         </div>
         
         {/* User-selected context pills */}
@@ -363,8 +363,8 @@ const PromptInput = ({
               width: pillWidths[index] ? `${pillWidths[index]}px` : 'auto'
             }}
           >
-            <span className="text-gray-500 font-medium">@</span>
-            <span className="truncate flex-1 min-w-0">{context}</span>
+            <span className="text-gray-500 text-sm">@</span>
+            <span className="truncate flex-1 min-w-0 text-sm">{context}</span>
             <button
               onClick={() => handleRemoveContext(context)}
               className="hidden w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all duration-200 group-hover:flex bg-white rounded-full hover:bg-gray-100 shadow-sm border border-gray-200 flex-shrink-0"
@@ -403,18 +403,18 @@ const PromptInput = ({
                 <button
                   key={index}
                   onClick={() => handleContextItemSelect(item)}
-                  className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors duration-150"
+                  className="w-full px-3 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors duration-150"
                 >
                   <div className="flex items-center gap-3">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-400 flex-shrink-0">
                       <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    <span className="truncate">{item}</span>
+                    <span className="truncate text-sm">{item}</span>
                   </div>
                 </button>
               ))
             ) : (
-              <div className="px-4 py-6 text-center text-sm text-gray-500">
+              <div className="px-3 py-1.5 text-center text-sm text-gray-500">
                 {contextSearch ? 'No items found' : 'No recent items'}
               </div>
             )}
@@ -423,7 +423,7 @@ const PromptInput = ({
       )}
       
       {/* Message text area */}
-      <div className="flex-1 flex items-start relative min-h-[24px]">
+      <div className="flex-1 flex items-start relative min-h-[24px] py-2">
         <textarea
           ref={textareaRef}
           value={value}
@@ -431,6 +431,7 @@ const PromptInput = ({
           onFocus={handleFocus}
           onBlur={handleBlur}
           onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
           className="w-full border-none outline-none bg-transparent text-base leading-6 text-gray-900 resize-none font-inherit min-h-[24px] max-h-[120px] placeholder:text-gray-400 placeholder:text-base disabled:cursor-not-allowed focus:outline-none"
@@ -440,48 +441,64 @@ const PromptInput = ({
       
       {/* Suggestion box - separate div between text and buttons */}
       {showSuggestion && (
-        <div className="mx-1 mb-2 mt-4">
-          <div className="text-xs font-medium text-gray-700 mb-2">Suggestion:</div>
-          <div className="bg-gray-100 rounded-lg p-3">
+        <div className="mx-1 mb-2 mt-1">
+          <div className="text-xs font-medium text-gray-500 mb-2">Suggestion:</div>
+          <div className="bg-gray-100 rounded-xl p-3">
             <div className="text-sm text-gray-600 leading-relaxed mb-3">
               {displayedSuggestion}
             </div>
-            <div className="flex items-center justify-end gap-2">
-              <button
-                onClick={handleDismissSuggestion}
-                className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 transition-colors duration-200"
-              >
-                Dismiss
-              </button>
-              <button
-                onClick={handleAcceptSuggestion}
-                className="px-3 py-1.5 text-sm text-white bg-blue-500 hover:bg-blue-600 rounded-lg shadow-sm transition-all duration-200"
-              >
-                Accept
-              </button>
-            </div>
+            {!isTyping && (
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  onClick={handleDismissSuggestion}
+                  className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                >
+                  Dismiss
+                </button>
+                <button
+                  onClick={handleAcceptSuggestion}
+                  className="px-3 py-1.5 text-sm text-white bg-gray-500 hover:bg-gray-600 rounded-lg shadow-sm transition-all duration-200"
+                >
+                  Accept
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
       
       {/* Actions row */}
       <div className="flex items-center justify-between">
-        {/* Plus button - always visible */}
-        <button 
-          className="border-none rounded-full w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center cursor-pointer transition-all duration-200 flex-shrink-0 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-          type="button"
-          disabled={disabled}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-gray-500">
-            <path 
-              d="M12 5V19M5 12H19" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Plus button - always visible */}
+          <button 
+            className="border-none rounded-full w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center cursor-pointer transition-all duration-200 flex-shrink-0 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+            type="button"
+            disabled={disabled}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-gray-500">
+              <path 
+                d="M12 5V19M5 12H19" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          
+          {/* Refine button - only show when there's content */}
+          {hasContent && (
+            <button 
+              className="px-3 py-1.5 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleRefine}
+              disabled={disabled}
+              type="button"
+            >
+              Refine prompt
+            </button>
+          )}
+        </div>
         
         {/* Send button - always show */}
         <button 
