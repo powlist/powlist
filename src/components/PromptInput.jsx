@@ -321,8 +321,8 @@ const PromptInput = ({
       <div 
         className={`
           bg-white shadow-sm border border-gray-200 
-          flex flex-col gap-3 transition-all duration-200 
-          relative p-3 sm:p-4 
+          flex flex-col gap-1 transition-all duration-200 
+          relative p-3 sm:p-3 
           hover:border-gray-300 hover:shadow-md
           ${isFocused ? 'border-blue-500 shadow-md' : ''} 
           ${disabled ? 'opacity-60 cursor-not-allowed hover:border-gray-200 hover:shadow-sm' : ''}
