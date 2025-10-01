@@ -333,13 +333,6 @@ const PromptInput = ({
       >
       {/* Add context button row */}
       <div className="flex items-center mb-2 gap-1 flex-wrap">
-        <button 
-          className="flex items-center justify-center w-8 h-8 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-all duration-200 hover:border-gray-300"
-          type="button"
-          onClick={handleContextClick}
-        >
-          <span className="text-gray-500 text-sm">@</span>
-        </button>
         <Tooltip 
           content={selectedContexts.length > 0 ? "Add more context" : "Add context to your message"}
           position="top"
