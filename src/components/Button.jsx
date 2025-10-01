@@ -1,4 +1,5 @@
 import React from 'react'
+import Tooltip from './Tooltip'
 
 const Button = ({ 
   children, 
@@ -10,6 +11,8 @@ const Button = ({
   onClick,
   className = '',
   type = 'button',
+  tooltip,
+  tooltipPosition = 'top',
   ...props 
 }) => {
   const baseClasses = "border-none rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 flex-shrink-0 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -30,7 +33,10 @@ const Button = ({
   const variantClasses = variants[variant] || variants.default
   const sizeClasses = sizes[size] || sizes.md
   
-  return (
+  // Determine if this is an icon-only button
+  const isIconOnly = icon && !children
+  
+  const buttonElement = (
     <button
       className={`${baseClasses} ${variantClasses} ${sizeClasses} ${className}`}
       onClick={onClick}
@@ -47,6 +53,17 @@ const Button = ({
       )}
     </button>
   )
+  
+  // Wrap with tooltip if tooltip is provided and button is icon-only
+  if (tooltip && isIconOnly) {
+    return (
+      <Tooltip content={tooltip} position={tooltipPosition} disabled={disabled}>
+        {buttonElement}
+      </Tooltip>
+    )
+  }
+  
+  return buttonElement
 }
 
 export default Button

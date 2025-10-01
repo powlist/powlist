@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react'
+import Tooltip from './Tooltip'
 
 const Pill = ({ 
   children, 
@@ -7,6 +8,7 @@ const Pill = ({
   showRemove = false,
   disabled = false,
   className = '',
+  removeTooltip = 'Remove',
   ...props 
 }) => {
   const [contentWidth, setContentWidth] = useState(null)
@@ -53,15 +55,17 @@ const Pill = ({
       {showRemove && onRemove && (
         <div className="absolute right-0 top-0 bottom-0 flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <div className="h-full w-8 bg-gradient-to-r from-gray-100 via-gray-100 via-gray-100/80 via-gray-100/50 to-gray-100/0 flex items-center justify-end pr-1">
-            <button
-              onClick={onRemove}
-              className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors duration-200 bg-white rounded-full hover:bg-gray-100 shadow-sm border border-gray-200"
-              type="button"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
+            <Tooltip content={removeTooltip} position="top" disabled={disabled}>
+              <button
+                onClick={onRemove}
+                className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors duration-200 bg-white rounded-full hover:bg-gray-100 shadow-sm border border-gray-200"
+                type="button"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </Tooltip>
           </div>
         </div>
       )}
