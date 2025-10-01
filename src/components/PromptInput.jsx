@@ -333,14 +333,11 @@ const PromptInput = ({
       {/* Add context button row */}
       <div className="flex items-center mb-2 gap-1 flex-wrap">
         <button 
-          className={`flex items-center gap-1 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-all duration-200 hover:border-gray-300 ${
-            selectedContexts.length > 0 ? 'w-8 h-8 justify-center items-center' : 'px-3 py-1'
-          }`}
+          className="flex items-center justify-center w-8 h-8 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-all duration-200 hover:border-gray-300"
           type="button"
           onClick={handleContextClick}
         >
           <span className="text-gray-500 text-sm">@</span>
-          {selectedContexts.length === 0 && <span className="text-sm">Add context</span>}
         </button>
         
         {/* System context pill - always shown, disabled */}
