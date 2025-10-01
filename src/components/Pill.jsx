@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react'
-import IconButton from './IconButton'
+import Tooltip from './Tooltip'
 
 const Pill = ({ 
   children, 
@@ -46,28 +46,30 @@ const Pill = ({
       {...props}
     >
       {/* Icon container with same size as button */}
-      <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 relative">
-        {/* @ icon that gets replaced on hover only for removable pills */}
-        <span className={`text-gray-400 text-sm transition-opacity duration-200 ${showRemove && onRemove && !disabled ? 'group-hover:opacity-0' : ''}`}>@</span>
-        
-        {/* Remove button that appears on hover only for removable pills */}
-        {showRemove && onRemove && !disabled && (
-          <IconButton
-            icon={
+      {showRemove && onRemove && !disabled ? (
+        <Tooltip content={removeTooltip} position="top" disabled={disabled}>
+          <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 relative">
+            {/* @ icon that gets replaced on hover only for removable pills */}
+            <span className="text-gray-400 text-sm transition-opacity duration-200 group-hover:opacity-0">@</span>
+            
+            {/* Remove button that appears on hover only for removable pills */}
+            <button
+              onClick={onRemove}
+              className="absolute inset-0 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all duration-200 rounded-full hover:bg-gray-100 opacity-0 group-hover:opacity-100"
+              type="button"
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-            }
-            tooltip={removeTooltip}
-            tooltipPosition="top"
-            disabled={disabled}
-            onClick={onRemove}
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            size="sm"
-            variant="ghost"
-          />
-        )}
-      </div>
+            </button>
+          </div>
+        </Tooltip>
+      ) : (
+        <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+          {/* @ icon that gets replaced on hover only for removable pills */}
+          <span className="text-gray-400 text-sm">@</span>
+        </div>
+      )}
       
       <span 
         ref={contentRef}
