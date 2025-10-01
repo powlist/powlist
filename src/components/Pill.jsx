@@ -1,4 +1,53 @@
 import React, { useRef, useEffect, useState } from 'react'
+import Tooltip from './Tooltip'
+
+// Icon component to handle SVG icons
+const Icon = ({ name, className = "w-4 h-4", color = "currentColor" }) => {
+  const [svgContent, setSvgContent] = useState(null)
+  
+  useEffect(() => {
+    const loadSvg = async () => {
+      try {
+        const response = await fetch(`/Icons/content-types/${name}.svg`)
+        const svgText = await response.text()
+        setSvgContent(svgText)
+      } catch (error) {
+        console.warn(`Failed to load icon: ${name}`)
+        setSvgContent(null)
+      }
+    }
+    
+    if (name) {
+      loadSvg()
+    }
+  }, [name])
+  
+  // If no SVG content loaded, show a simple @ symbol as fallback
+  if (!svgContent) {
+    return (
+      <div className={className} style={{ color }}>
+        <span className="text-sm">@</span>
+      </div>
+    )
+  }
+  
+  // Replace fill colors and add size constraints to the SVG
+  let coloredSvg = svgContent.replace(/fill="#[^"]*"/g, `fill="${color}"`)
+  
+  // Add width and height attributes to ensure proper sizing
+  coloredSvg = coloredSvg.replace(
+    /<svg([^>]*)>/,
+    '<svg$1 width="100%" height="100%" style="width: 100%; height: 100%;">'
+  )
+  
+  return (
+    <div 
+      className={className}
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      dangerouslySetInnerHTML={{ __html: coloredSvg }}
+    />
+  )
+}
 
 const Pill = ({ 
   children, 
@@ -7,6 +56,9 @@ const Pill = ({
   showRemove = false,
   disabled = false,
   className = '',
+  removeTooltip = 'Remove',
+  icon = null, // Icon name from Icons/content-types/ folder (e.g., 'banner', 'content', 'data')
+  iconColor = 'var(--pill-icon-color, #6B7280)', // Uses CSS custom property with fallback
   ...props 
 }) => {
   const [contentWidth, setContentWidth] = useState(null)
@@ -14,14 +66,17 @@ const Pill = ({
   const pillRef = useRef(null)
   
   const baseClasses = "inline-flex items-center gap-0.5 pl-1 pr-3 h-8 text-sm rounded-full transition-colors duration-200"
+  const iconSize = "w-4 h-4" // Single definition for all icon sizes
   
   const variants = {
     default: "text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300",
-    system: "text-gray-400 bg-gray-100 border border-gray-200 cursor-not-allowed opacity-75",
     removable: "text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300"
   }
   
   const variantClasses = variants[variant] || variants.default
+  
+  // Apply disabled styles when disabled prop is true
+  const disabledClasses = disabled ? "text-gray-400 bg-gray-100 border border-gray-200 cursor-not-allowed opacity-75" : ""
   
   // Measure content width on mount and when content changes
   useEffect(() => {
@@ -34,7 +89,7 @@ const Pill = ({
   return (
     <div
       ref={pillRef}
-      className={`group relative ${baseClasses} ${variantClasses} ${className}`}
+      className={`group relative ${baseClasses} ${variantClasses} ${disabledClasses} ${className}`}
       style={{
         width: 'fit-content',
         maxWidth: '200px',
@@ -61,6 +116,38 @@ const Pill = ({
           </button>
         )}
       </div>
+      {showRemove && onRemove && !disabled ? (
+        <Tooltip content={removeTooltip} position="top" disabled={disabled}>
+          <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 relative">
+            {/* Dynamic icon with @ fallback */}
+            <Icon 
+              name={icon} 
+              className={`${iconSize} transition-opacity duration-200 group-hover:opacity-0`} 
+              color={iconColor} 
+            />
+            
+            {/* Remove button that appears on hover only for removable pills */}
+            <button
+              onClick={onRemove}
+              className="absolute inset-0 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all duration-200 rounded-full hover:bg-gray-100 opacity-0 group-hover:opacity-100"
+              type="button"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </Tooltip>
+      ) : (
+        <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+          {/* Dynamic icon with @ fallback */}
+          <Icon 
+            name={icon} 
+            className={iconSize} 
+            color={iconColor} 
+          />
+        </div>
+      )}
       
       <span 
         ref={contentRef}

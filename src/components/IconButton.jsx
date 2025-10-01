@@ -1,18 +1,16 @@
 import React from 'react'
 import Tooltip from './Tooltip'
 
-const Button = ({ 
-  children, 
-  variant = 'default', 
-  size = 'md',
+const IconButton = ({ 
   icon,
-  shortcut,
+  tooltip,
+  tooltipPosition = 'top',
   disabled = false,
   onClick,
   className = '',
   type = 'button',
-  tooltip,
-  tooltipPosition = 'top',
+  size = 'sm',
+  variant = 'ghost',
   ...props 
 }) => {
   const baseClasses = "border-none rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 flex-shrink-0 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -25,16 +23,13 @@ const Button = ({
   }
   
   const sizes = {
-    sm: "w-9 h-9",
-    md: "w-9 h-9 sm:w-10 sm:h-10",
-    lg: "w-10 h-10 sm:w-12 sm:h-12"
+    sm: "w-6 h-6",
+    md: "w-8 h-8",
+    lg: "w-10 h-10"
   }
   
-  const variantClasses = variants[variant] || variants.default
-  const sizeClasses = sizes[size] || sizes.md
-  
-  // Determine if this is an icon-only button
-  const isIconOnly = icon && !children
+  const variantClasses = variants[variant] || variants.ghost
+  const sizeClasses = sizes[size] || sizes.sm
   
   const buttonElement = (
     <button
@@ -44,18 +39,12 @@ const Button = ({
       type={type}
       {...props}
     >
-      {icon && icon}
-      {children}
-      {shortcut && (
-        <span className="ml-1 text-sm opacity-50 font-normal">
-          {shortcut}
-        </span>
-      )}
+      {icon}
     </button>
   )
   
-  // Wrap with tooltip if tooltip is provided and button is icon-only
-  if (tooltip && isIconOnly) {
+  // Always wrap with tooltip if tooltip is provided
+  if (tooltip) {
     return (
       <Tooltip content={tooltip} position={tooltipPosition} disabled={disabled}>
         {buttonElement}
@@ -66,4 +55,4 @@ const Button = ({
   return buttonElement
 }
 
-export default Button
+export default IconButton

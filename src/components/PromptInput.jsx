@@ -4,6 +4,7 @@ import Button from './Button'
 import ContextPopover from './ContextPopover'
 import SuggestionBox from './SuggestionBox'
 import ActionButtons from './ActionButtons'
+import Tooltip from './Tooltip'
 
 const PromptInput = ({ 
   placeholder = "Message Product builder...", 
@@ -339,27 +340,69 @@ const PromptInput = ({
         >
           <span className="text-gray-500 text-sm">@</span>
         </button>
+        <Tooltip 
+          content={selectedContexts.length > 0 ? "Add more context" : "Add context to your message"}
+          position="top"
+        >
+          <button 
+            className="w-8 h-8 flex items-center justify-center text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-all duration-200 hover:border-gray-300"
+            type="button"
+            onClick={handleContextClick}
+          >
+            <span className="text-gray-500 text-sm">@</span>
+          </button>
+        </Tooltip>
         
         {/* System context pill - always shown, disabled */}
-        <Pill variant="system" disabled>
+        <Pill variant="default" disabled icon="data" iconColor="#9CA3AF">
           {systemContext}
         </Pill>
         
         {/* User-selected context pills */}
-        {selectedContexts.map((context, index) => (
-          <Pill
-            key={index}
-            ref={(el) => { pillRefs.current[index] = el }}
-            variant="removable"
-            showRemove
-            onRemove={() => handleRemoveContext(context)}
-            style={{
-              width: pillWidths[index] ? `${pillWidths[index]}px` : 'auto'
-            }}
-          >
-            {context}
-          </Pill>
-        ))}
+        {selectedContexts.map((context, index) => {
+          // Map context types to appropriate icons
+          const getIconForContext = (contextName) => {
+            const lowerContext = contextName.toLowerCase()
+            if (lowerContext.includes('marketing') || lowerContext.includes('campaign')) return 'banner'
+            if (lowerContext.includes('product') || lowerContext.includes('launch')) return 'content'
+            if (lowerContext.includes('design') || lowerContext.includes('ui')) return 'color'
+            if (lowerContext.includes('strategy') || lowerContext.includes('plan')) return 'data'
+            if (lowerContext.includes('analysis') || lowerContext.includes('research')) return 'grid_view'
+            if (lowerContext.includes('website') || lowerContext.includes('web')) return 'page'
+            if (lowerContext.includes('mobile') || lowerContext.includes('app')) return 'media'
+            return 'content' // default icon
+          }
+          
+          // Map context types to appropriate colors
+          const getColorForContext = (contextName) => {
+            const lowerContext = contextName.toLowerCase()
+            if (lowerContext.includes('marketing') || lowerContext.includes('campaign')) return '#EF4444' // red
+            if (lowerContext.includes('product') || lowerContext.includes('launch')) return '#3B82F6' // blue
+            if (lowerContext.includes('design') || lowerContext.includes('ui')) return '#8B5CF6' // purple
+            if (lowerContext.includes('strategy') || lowerContext.includes('plan')) return '#10B981' // green
+            if (lowerContext.includes('analysis') || lowerContext.includes('research')) return '#F59E0B' // amber
+            if (lowerContext.includes('website') || lowerContext.includes('web')) return '#06B6D4' // cyan
+            if (lowerContext.includes('mobile') || lowerContext.includes('app')) return '#EC4899' // pink
+            return '#6B7280' // default gray
+          }
+          
+          return (
+            <Pill
+              key={index}
+              ref={(el) => { pillRefs.current[index] = el }}
+              variant="removable"
+              showRemove
+              onRemove={() => handleRemoveContext(context)}
+              icon={getIconForContext(context)}
+              iconColor="var(--pill-icon-color, #6B7280)" // Uses CSS custom property
+              style={{
+                width: pillWidths[index] ? `${pillWidths[index]}px` : 'auto'
+              }}
+            >
+              {context}
+            </Pill>
+          )
+        })}
       </div>
 
       {/* Context Popover */}

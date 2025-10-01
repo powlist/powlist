@@ -35,6 +35,7 @@ const ActionButtons = ({
           variant="ghost"
           disabled={disabled}
           size='sm'
+          tooltip="Attach file"
         />
         
         {/* Refine button - only show when there's content */}
@@ -58,6 +59,7 @@ const ActionButtons = ({
         variant={hasContent ? 'primary' : 'default'}
         onClick={onSend}
         disabled={disabled || !hasContent}
+        tooltip={hasContent ? "Send message" : "Type a message to send"}
       />
     </div>
   )
