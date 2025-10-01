@@ -55,7 +55,7 @@ const Pill = ({
           <Tooltip content={removeTooltip} position="top" disabled={disabled}>
             <button
               onClick={onRemove}
-              className="absolute w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all duration-200 rounded-full hover:bg-gray-100 opacity-0 group-hover:opacity-100"
+              className="absolute w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all duration-200  rounded-full hover:bg-gray-100 opacity-0 group-hover:opacity-100"
               type="button"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
