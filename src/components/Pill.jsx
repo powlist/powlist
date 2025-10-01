@@ -8,7 +8,7 @@ const Icon = ({ name, className = "w-4 h-4", color = "currentColor" }) => {
   useEffect(() => {
     const loadSvg = async () => {
       try {
-        const response = await fetch(`/Icons/content-types/${name}.svg`)
+        const response = await fetch(`/icons/${name}.svg`)
         const svgText = await response.text()
         setSvgContent(svgText)
       } catch (error) {
@@ -22,11 +22,13 @@ const Icon = ({ name, className = "w-4 h-4", color = "currentColor" }) => {
     }
   }, [name])
   
-  // If no SVG content loaded, show a simple @ symbol as fallback
+  // If no SVG content loaded, show a simple tag icon as fallback
   if (!svgContent) {
     return (
       <div className={className} style={{ color }}>
-        <span className="text-sm">@</span>
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fillRule="evenodd" clipRule="evenodd" d="M10 1.75C5.44365 1.75 1.75 5.44365 1.75 10C1.75 14.5563 5.44365 18.25 10 18.25C14.5563 18.25 18.25 14.5563 18.25 10C18.25 5.44365 14.5563 1.75 10 1.75ZM3.25 10C3.25 6.27208 6.27208 3.25 10 3.25C13.7279 3.25 16.75 6.27208 16.75 10C16.75 13.7279 13.7279 16.75 10 16.75C6.27208 16.75 3.25 13.7279 3.25 10Z" fill="currentColor"/>
+        </svg>
       </div>
     )
   }
@@ -49,6 +51,21 @@ const Icon = ({ name, className = "w-4 h-4", color = "currentColor" }) => {
   )
 }
 
+/**
+ * Pill Component with Dynamic Icons
+ * 
+ * Available Icons (from icons/ folder):
+ * 
+ * Marketing & Campaigns: banner, offer
+ * Product & Development: content, code, conmponent, container
+ * Design & UI/UX: color, grid_view, columns, carousel
+ * Data & Analytics: data, number, decimal
+ * Content & Media: media, file, page, text, title, richtext, short-text
+ * Communication: email, Phone, link
+ * Forms & Input: boolean, select single, multioption, date, time, price, sku
+ * Navigation: menu, click
+ * Dynamic & Interactive: dynamic, relation, content-block, split-label
+ */
 const Pill = ({ 
   children, 
   variant = 'default', 
@@ -57,7 +74,7 @@ const Pill = ({
   disabled = false,
   className = '',
   removeTooltip = 'Remove',
-  icon = null, // Icon name from Icons/content-types/ folder (e.g., 'banner', 'content', 'data')
+  icon = null, // Icon name from icons/ folder
   iconColor = 'var(--pill-icon-color, #6B7280)', // Uses CSS custom property with fallback
   ...props 
 }) => {
@@ -99,23 +116,6 @@ const Pill = ({
       {...props}
     >
       {/* Icon container with same size as button */}
-      <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
-        {/* @ icon that gets replaced on hover only for removable pills */}
-        <span className={`text-gray-400 text-sm transition-opacity duration-200 ${showRemove && onRemove && !disabled ? 'group-hover:opacity-0' : ''}`}>@</span>
-        
-        {/* Remove button that appears on hover only for removable pills */}
-        {showRemove && onRemove && !disabled && (
-          <button
-            onClick={onRemove}
-            className="absolute w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all duration-200  rounded-full hover:bg-gray-100 opacity-0 group-hover:opacity-100"
-            type="button"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        )}
-      </div>
       {showRemove && onRemove && !disabled ? (
         <Tooltip content={removeTooltip} position="top" disabled={disabled}>
           <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 relative">
