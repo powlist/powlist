@@ -15,7 +15,7 @@ const Button = ({
   tooltipPosition = 'top',
   ...props 
 }) => {
-  const baseClasses = "border-none rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 flex-shrink-0 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+  const baseClasses = "border-none rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
   
   const variants = {
     default: "bg-gray-300 hover:bg-gray-400",

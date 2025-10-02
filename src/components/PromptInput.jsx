@@ -30,7 +30,7 @@ const PromptInput = ({
   ])
   const [selectedContexts, setSelectedContexts] = useState([])
   const [pillWidths, setPillWidths] = useState({})
-  const [systemContext] = useState('Electronics') // System-defined context based on permissions
+  const [systemContext] = useState('Nike USA') // System-defined context based on permissions
   const textareaRef = useRef(null)
   const typingTimeoutRef = useRef(null)
   const pillRefs = useRef({})
@@ -353,128 +353,16 @@ const PromptInput = ({
         
         {/* User-selected context pills */}
         {selectedContexts.map((context, index) => {
-          // Map context types to appropriate icons
-          const getIconForContext = (contextName) => {
-            const lowerContext = contextName.toLowerCase()
-            
-            // Marketing & Campaigns
-            if (lowerContext.includes('marketing') || lowerContext.includes('campaign') || lowerContext.includes('promotion')) return 'banner'
-            if (lowerContext.includes('offer') || lowerContext.includes('deal')) return 'offer'
-            
-            // Product & Development
-            if (lowerContext.includes('product') || lowerContext.includes('launch')) return 'content'
-            if (lowerContext.includes('development') || lowerContext.includes('code') || lowerContext.includes('programming')) return 'code'
-            if (lowerContext.includes('component') || lowerContext.includes('module')) return 'conmponent'
-            if (lowerContext.includes('container') || lowerContext.includes('wrapper')) return 'container'
-            
-            // Design & UI/UX
-            if (lowerContext.includes('design') || lowerContext.includes('ui') || lowerContext.includes('ux')) return 'color'
-            if (lowerContext.includes('layout') || lowerContext.includes('grid')) return 'grid_view'
-            if (lowerContext.includes('columns') || lowerContext.includes('structure')) return 'columns'
-            if (lowerContext.includes('carousel') || lowerContext.includes('slider')) return 'carousel'
-            
-            // Data & Analytics
-            if (lowerContext.includes('strategy') || lowerContext.includes('plan') || lowerContext.includes('roadmap')) return 'data'
-            if (lowerContext.includes('analysis') || lowerContext.includes('research') || lowerContext.includes('insights')) return 'grid_view'
-            if (lowerContext.includes('database') || lowerContext.includes('storage')) return 'data'
-            if (lowerContext.includes('metrics') || lowerContext.includes('kpi')) return 'number'
-            if (lowerContext.includes('decimal') || lowerContext.includes('float')) return 'decimal'
-            
-            // Content & Media
-            if (lowerContext.includes('content') || lowerContext.includes('article') || lowerContext.includes('blog')) return 'content'
-            if (lowerContext.includes('media') || lowerContext.includes('image') || lowerContext.includes('video')) return 'media'
-            if (lowerContext.includes('file') || lowerContext.includes('document')) return 'file'
-            if (lowerContext.includes('page') || lowerContext.includes('website') || lowerContext.includes('web')) return 'page'
-            if (lowerContext.includes('text') || lowerContext.includes('copy')) return 'text'
-            if (lowerContext.includes('title') || lowerContext.includes('heading')) return 'title'
-            if (lowerContext.includes('richtext') || lowerContext.includes('editor')) return 'richtext'
-            if (lowerContext.includes('short-text') || lowerContext.includes('summary')) return 'short-text'
-            
-            // Communication & Contact
-            if (lowerContext.includes('email') || lowerContext.includes('mail')) return 'email'
-            if (lowerContext.includes('phone') || lowerContext.includes('contact') || lowerContext.includes('call')) return 'Phone'
-            if (lowerContext.includes('link') || lowerContext.includes('url')) return 'link'
-            
-            // Forms & Input
-            if (lowerContext.includes('form') || lowerContext.includes('input') || lowerContext.includes('field')) return 'text'
-            if (lowerContext.includes('boolean') || lowerContext.includes('checkbox') || lowerContext.includes('toggle')) return 'boolean'
-            if (lowerContext.includes('select') || lowerContext.includes('dropdown') || lowerContext.includes('choice')) return 'select single'
-            if (lowerContext.includes('multioption') || lowerContext.includes('multiselect')) return 'multioption'
-            if (lowerContext.includes('date') || lowerContext.includes('calendar')) return 'date'
-            if (lowerContext.includes('time') || lowerContext.includes('schedule')) return 'time'
-            if (lowerContext.includes('price') || lowerContext.includes('cost') || lowerContext.includes('money')) return 'price'
-            if (lowerContext.includes('sku') || lowerContext.includes('product code')) return 'sku'
-            
-            // Navigation & Menu
-            if (lowerContext.includes('menu') || lowerContext.includes('navigation') || lowerContext.includes('nav')) return 'menu'
-            if (lowerContext.includes('click') || lowerContext.includes('button') || lowerContext.includes('action')) return 'click'
-            
-            // Dynamic & Interactive
-            if (lowerContext.includes('dynamic') || lowerContext.includes('interactive')) return 'dynamic'
-            if (lowerContext.includes('relation') || lowerContext.includes('relationship') || lowerContext.includes('connection')) return 'relation'
-            if (lowerContext.includes('content-block') || lowerContext.includes('block')) return 'content-block'
-            if (lowerContext.includes('split-label') || lowerContext.includes('label')) return 'split-label'
-            
-            return 'content' // default icon
-          }
-          
-          // Map context types to appropriate colors
-          const getColorForContext = (contextName) => {
-            const lowerContext = contextName.toLowerCase()
-            
-            // Marketing & Campaigns - Red
-            if (lowerContext.includes('marketing') || lowerContext.includes('campaign') || lowerContext.includes('promotion') || 
-                lowerContext.includes('offer') || lowerContext.includes('deal')) return '#EF4444'
-            
-            // Product & Development - Blue
-            if (lowerContext.includes('product') || lowerContext.includes('launch') || lowerContext.includes('development') || 
-                lowerContext.includes('code') || lowerContext.includes('programming') || lowerContext.includes('component') || 
-                lowerContext.includes('module') || lowerContext.includes('container') || lowerContext.includes('wrapper')) return '#3B82F6'
-            
-            // Design & UI/UX - Purple
-            if (lowerContext.includes('design') || lowerContext.includes('ui') || lowerContext.includes('ux') || 
-                lowerContext.includes('layout') || lowerContext.includes('grid') || lowerContext.includes('columns') || 
-                lowerContext.includes('structure') || lowerContext.includes('carousel') || lowerContext.includes('slider')) return '#8B5CF6'
-            
-            // Data & Analytics - Green
-            if (lowerContext.includes('strategy') || lowerContext.includes('plan') || lowerContext.includes('roadmap') || 
-                lowerContext.includes('analysis') || lowerContext.includes('research') || lowerContext.includes('insights') || 
-                lowerContext.includes('database') || lowerContext.includes('storage') || lowerContext.includes('metrics') || 
-                lowerContext.includes('kpi') || lowerContext.includes('decimal') || lowerContext.includes('float')) return '#10B981'
-            
-            // Content & Media - Orange
-            if (lowerContext.includes('content') || lowerContext.includes('article') || lowerContext.includes('blog') || 
-                lowerContext.includes('media') || lowerContext.includes('image') || lowerContext.includes('video') || 
-                lowerContext.includes('file') || lowerContext.includes('document') || lowerContext.includes('page') || 
-                lowerContext.includes('website') || lowerContext.includes('web') || lowerContext.includes('text') || 
-                lowerContext.includes('copy') || lowerContext.includes('title') || lowerContext.includes('heading') || 
-                lowerContext.includes('richtext') || lowerContext.includes('editor') || lowerContext.includes('short-text') || 
-                lowerContext.includes('summary')) return '#F97316'
-            
-            // Communication & Contact - Cyan
-            if (lowerContext.includes('email') || lowerContext.includes('mail') || lowerContext.includes('phone') || 
-                lowerContext.includes('contact') || lowerContext.includes('call') || lowerContext.includes('link') || 
-                lowerContext.includes('url')) return '#06B6D4'
-            
-            // Forms & Input - Amber
-            if (lowerContext.includes('form') || lowerContext.includes('input') || lowerContext.includes('field') || 
-                lowerContext.includes('boolean') || lowerContext.includes('checkbox') || lowerContext.includes('toggle') || 
-                lowerContext.includes('select') || lowerContext.includes('dropdown') || lowerContext.includes('choice') || 
-                lowerContext.includes('multioption') || lowerContext.includes('multiselect') || lowerContext.includes('date') || 
-                lowerContext.includes('calendar') || lowerContext.includes('time') || lowerContext.includes('schedule') || 
-                lowerContext.includes('price') || lowerContext.includes('cost') || lowerContext.includes('money') || 
-                lowerContext.includes('sku') || lowerContext.includes('product code')) return '#F59E0B'
-            
-            // Navigation & Menu - Pink
-            if (lowerContext.includes('menu') || lowerContext.includes('navigation') || lowerContext.includes('nav') || 
-                lowerContext.includes('click') || lowerContext.includes('button') || lowerContext.includes('action')) return '#EC4899'
-            
-            // Dynamic & Interactive - Indigo
-            if (lowerContext.includes('dynamic') || lowerContext.includes('interactive') || lowerContext.includes('relation') || 
-                lowerContext.includes('relationship') || lowerContext.includes('connection') || lowerContext.includes('content-block') || 
-                lowerContext.includes('block') || lowerContext.includes('split-label') || lowerContext.includes('label')) return '#6366F1'
-            
-            return '#6B7280' // default gray
+          // Simple function to get a random icon from available icons
+          const getRandomIcon = () => {
+            const availableIcons = [
+              'banner', 'boolean', 'carousel', 'click', 'code', 'color', 'columns', 'conmponent', 
+              'container', 'content-block', 'content', 'data', 'date', 'decimal', 'dynamic', 
+              'email', 'file', 'grid_view', 'link', 'media', 'menu', 'multioption', 'number', 
+              'offer', 'page', 'Phone', 'price', 'relation', 'richtext', 'select single', 
+              'short-text', 'sku', 'split-label', 'text', 'time', 'title'
+            ]
+            return availableIcons[Math.floor(Math.random() * availableIcons.length)]
           }
           
           return (
@@ -484,8 +372,8 @@ const PromptInput = ({
               variant="removable"
               showRemove
               onRemove={() => handleRemoveContext(context)}
-              icon={getIconForContext(context)}
-              iconColor="var(--pill-icon-color, #6B7280)" // Uses CSS custom property
+              icon={getRandomIcon()}
+              iconColor="#6B7280" // Fixed color for all pills
               style={{
                 width: pillWidths[index] ? `${pillWidths[index]}px` : 'auto'
               }}
