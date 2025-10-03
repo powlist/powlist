@@ -5,6 +5,12 @@ import ContextPopover from './ContextPopover'
 import SuggestionBox from './SuggestionBox'
 import ActionButtons from './ActionButtons'
 import Tooltip from './Tooltip'
+import { 
+  getRecentItems, 
+  searchEntries, 
+  addToRecentItems, 
+  getContextCategory
+} from '../data/contextDatabase'
 
 const PromptInput = ({ 
   placeholder = "Message Product builder...", 
@@ -21,16 +27,9 @@ const PromptInput = ({
   const [suggestionAccepted, setSuggestionAccepted] = useState(false)
   const [showContextPopover, setShowContextPopover] = useState(false)
   const [contextSearch, setContextSearch] = useState('')
-  const [recentItems, setRecentItems] = useState([
-    'Marketing campaign strategy',
-    'Product launch plan',
-    'User research insights',
-    'Competitive analysis',
-    'Brand guidelines'
-  ])
+  const [recentItems, setRecentItems] = useState(getRecentItems())
   const [selectedContexts, setSelectedContexts] = useState([])
   const [pillWidths, setPillWidths] = useState({})
-  const [systemContext] = useState('Nike USA') // System-defined context based on permissions
   const textareaRef = useRef(null)
   const typingTimeoutRef = useRef(null)
   const pillRefs = useRef({})
@@ -266,10 +265,9 @@ const PromptInput = ({
     // Keep popover open for multiple selections
     setContextSearch('')
     
-    // Add to recent items if not already there
-    if (!recentItems.includes(item)) {
-      setRecentItems(prev => [item, ...prev.slice(0, 4)]) // Keep only 5 recent items
-    }
+    // Add to recent items using database function
+    addToRecentItems(item)
+    setRecentItems(getRecentItems())
     
     // Focus back to textarea
     if (textareaRef.current) {
@@ -312,10 +310,12 @@ const PromptInput = ({
   const isEmpty = value.trim() === ''
   const hasContent = value.trim().length > 0
 
-  // Filter recent items based on search
-  const filteredItems = recentItems.filter(item => 
-    item.toLowerCase().includes(contextSearch.toLowerCase())
-  )
+  // Filter items based on search - use database search if there's a search term
+  const filteredItems = contextSearch.trim() 
+    ? searchEntries(contextSearch)
+    : recentItems.filter(item => 
+        item.toLowerCase().includes(contextSearch.toLowerCase())
+      )
 
   return (
     <div className="relative">
@@ -338,7 +338,7 @@ const PromptInput = ({
           position="top"
         >
           <button 
-            className="w-8 h-8 flex items-center justify-center text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-all duration-200 hover:border-gray-300"
+            className="w-8 h-8 flex items-center justify-center text-sm text-gray-600 bg-white hover:bg-gray-50 border border-gray-200 rounded-full transition-all duration-200 hover:border-gray-300"
             type="button"
             onClick={handleContextClick}
           >
@@ -346,24 +346,9 @@ const PromptInput = ({
           </button>
         </Tooltip>
         
-        {/* System context pill - always shown, disabled */}
-        <Pill variant="default" disabled icon="data" iconColor="#9CA3AF">
-          {systemContext}
-        </Pill>
-        
         {/* User-selected context pills */}
         {selectedContexts.map((context, index) => {
-          // Simple function to get a random icon from available icons
-          const getRandomIcon = () => {
-            const availableIcons = [
-              'banner', 'boolean', 'carousel', 'click', 'code', 'color', 'columns', 'conmponent', 
-              'container', 'content-block', 'content', 'data', 'date', 'decimal', 'dynamic', 
-              'email', 'file', 'grid_view', 'link', 'media', 'menu', 'multioption', 'number', 
-              'offer', 'page', 'Phone', 'price', 'relation', 'richtext', 'select single', 
-              'short-text', 'sku', 'split-label', 'text', 'time', 'title'
-            ]
-            return availableIcons[Math.floor(Math.random() * availableIcons.length)]
-          }
+          const category = getContextCategory(context)
           
           return (
             <Pill
@@ -372,8 +357,8 @@ const PromptInput = ({
               variant="removable"
               showRemove
               onRemove={() => handleRemoveContext(context)}
-              icon={getRandomIcon()}
-              iconColor="#6B7280" // Fixed color for all pills
+              icon={category.icon}
+              iconColor={category.iconColor}
               style={{
                 width: pillWidths[index] ? `${pillWidths[index]}px` : 'auto'
               }}

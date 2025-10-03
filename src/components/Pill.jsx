@@ -86,8 +86,8 @@ const Pill = ({
   const iconSize = "w-4 h-4" // Single definition for all icon sizes
   
   const variants = {
-    default: "text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300",
-    removable: "text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300"
+    default: "text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300",
+    removable: "text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300"
   }
   
   const variantClasses = variants[variant] || variants.default
