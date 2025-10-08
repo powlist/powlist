@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { getContextCategory, contextDatabase } from '../data/contextDatabase'
+import Icon from './Icon'
 
 const ContextPopover = ({ 
   isOpen, 
@@ -169,14 +170,9 @@ const ContextPopover = ({
       {/* Search input */}
       <div className="p-2 border-gray-100" onClick={(e) => e.stopPropagation()}>
         <div className="relative">
-          <svg 
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <Icon name="IconMagnifyingGlass" className="w-4 h-4" color="#6B7280" />
+          </div>
           <input
             type="text"
             placeholder="Search"
@@ -194,11 +190,9 @@ const ContextPopover = ({
                 e.stopPropagation()
                 onSearchChange({ target: { value: '' } })
               }}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors z-20"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-20"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              <Icon name="IconX" className="w-4 h-4" color="currentColor" />
             </button>
           )}
         </div>
@@ -278,21 +272,15 @@ const ContextPopover = ({
                   >
                     <div className="flex items-center gap-2">
                       {/* Category Icon */}
-                      <div className="w-5 h-5 flex items-center justify-center">
-                        <img 
-                          src={`/icons/${category.icon}.svg`}
-                          alt={category.name}
-                          width="20"
-                          height="20"
-                          className="opacity-50"
-                        />
-                      </div>
+                      <Icon 
+                        name={category.icon} 
+                        className="w-5 h-5 opacity-50" 
+                        color="#6B7280"
+                      />
                       <span className="text-sm font-medium">{category.name}</span>
                     </div>
                     {/* Chevron */}
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-400">
-                      <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+                    <Icon name="IconCaretRight" className="w-4 h-4" color="#9CA3AF" />
                   </div>
                 </div>
               ))

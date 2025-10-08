@@ -209,8 +209,16 @@ const PromptInput = ({
 
   const handleSend = () => {
     if (value.trim() && onSend) {
-      onSend(value.trim())
+      // Attach selected contexts to the message
+      let messageToSend = value.trim()
+      if (selectedContexts.length > 0) {
+        const contextsString = selectedContexts.map(ctx => `@${ctx}`).join(' ')
+        messageToSend = `${contextsString}\n\n${messageToSend}`
+      }
+      
+      onSend(messageToSend)
       setValue('')
+      setSelectedContexts([]) // Clear selected contexts after sending
       setSuggestionAccepted(false) // Reset suggestion state when sending
     }
   }

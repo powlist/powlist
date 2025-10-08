@@ -12,7 +12,7 @@ const SuggestionBox = ({
 
   return (
     <div className={`mx-1 mb-2 mt-1 ${className}`}>
-      <div className="bg-gray-100 rounded-xl p-3">
+      <div className="bg-gray-100 rounded-2xl p-3">
         <div className="text-sm text-gray-600 leading-relaxed mb-3">
           {suggestion}
         </div>
@@ -28,7 +28,7 @@ const SuggestionBox = ({
               onClick={onAccept}
               className="px-3 py-1.5 text-sm text-white bg-gray-500 hover:bg-gray-600 rounded-lg shadow-sm transition-all duration-200"
             >
-              Accept
+              Apply
             </button>
           </div>
         )}
