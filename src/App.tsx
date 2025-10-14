@@ -1,0 +1,49 @@
+import React, { useState } from 'react'
+import PromptInput from './components/PromptInput.tsx'
+import './App.css'
+
+interface Message {
+  id: number;
+  text: string;
+  timestamp: Date;
+}
+
+function App() {
+  const [messages, setMessages] = useState<Message[]>([])
+
+  const handleSend = (message: string) => {
+    console.log('Message sent:', message)
+    setMessages(prev => [...prev, { id: Date.now(), text: message, timestamp: new Date() }])
+  }
+
+  return (
+    <div className="app">
+      <div className="demo-container">
+        
+        <div className="demo-section">
+          <PromptInput onSend={handleSend} />
+        </div>
+
+
+        {messages.length > 0 && (
+          <div className="messages-section">
+            <h2>Sent Messages</h2>
+            <div className="messages-list">
+              {messages.map((message) => (
+                <div key={message.id} className="message-item">
+                  <span className="message-text">{message.text}</span>
+                  <span className="message-time">
+                    {message.timestamp.toLocaleTimeString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default App
+
