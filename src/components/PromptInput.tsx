@@ -1,11 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import Pill from './Pill.tsx'
-import Button from './Button.tsx'
 import ContextPopover from './ContextPopover.tsx'
 import SuggestionBox from './SuggestionBox.tsx'
 import ActionButtons from './ActionButtons.tsx'
-import Tooltip from './Tooltip.tsx'
-import Icon from './Icon.tsx'
 import { 
   getRecentItems, 
   searchEntries, 
@@ -350,23 +347,11 @@ const PromptInput: React.FC<PromptInputProps> = ({
         `} 
         onClick={handleContainerClick}
       >
-      {/* Add context button row */}
-      <div className="flex items-center gap-1 flex-wrap pb-5">
-        <Tooltip 
-          content="Add context"
-          position="top"
-        >
-          <button 
-            className="w-8 h-8 flex items-center justify-center text-sm text-gray-600 bg-white hover:bg-gray-50 border border-gray-200 rounded-full transition-all duration-200 hover:border-gray-300"
-            type="button"
-            onClick={handleContextClick}
-          >
-            <Icon name="IconPlus" className="w-4 h-4" color="#6B7280" />
-          </button>
-        </Tooltip>
-        
-        {/* User-selected context pills */}
-        {selectedContexts.map((context, index) => {
+      {/* Context pills row */}
+      {selectedContexts.length > 0 && (
+        <div className="flex items-center gap-1 flex-wrap pb-5">
+          {/* User-selected context pills */}
+          {selectedContexts.map((context, index) => {
           const category = getContextCategory(context)
           
           return (
@@ -386,7 +371,8 @@ const PromptInput: React.FC<PromptInputProps> = ({
             </Pill>
           )
         })}
-      </div>
+        </div>
+      )}
 
       {/* Context Popover */}
       <ContextPopover
@@ -430,6 +416,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
         disabled={disabled}
         onRefine={handleRefine}
         onSend={handleSend}
+        onContextClick={handleContextClick}
       />
       </div>
     </div>
