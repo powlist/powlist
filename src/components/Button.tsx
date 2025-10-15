@@ -37,15 +37,15 @@ const Button: React.FC<ButtonProps> = ({
   
   const variants: Record<ButtonVariant, string> = {
     default: "bg-gray-300 hover:bg-gray-400",
-    primary: "bg-blue-500 hover:bg-blue-600",
+    primary: "hover:opacity-90",
     secondary: "bg-gray-100 hover:bg-gray-200",
     ghost: "hover:bg-gray-100"
   }
   
   const sizes: Record<ButtonSize, string> = {
     sm: "w-9 h-9",
-    md: "w-9 h-9 sm:w-10 sm:h-10",
-    lg: "w-10 h-10 sm:w-12 sm:h-12"
+    md: "w-9 h-9",
+    lg: "w-10 h-10"
   }
   
   const variantClasses = variants[variant] || variants.default
@@ -54,9 +54,11 @@ const Button: React.FC<ButtonProps> = ({
   // Determine if this is an icon-only button
   const isIconOnly = icon && !children
   
+  const primaryIconClasses = variant === 'primary' && isIconOnly ? 'bg-[#0366dd] w-9 h-9' : '';
+  
   const buttonElement = (
     <button
-      className={`${baseClasses} ${variantClasses} ${sizeClasses} ${className}`}
+      className={`${baseClasses} ${variantClasses} ${sizeClasses} ${primaryIconClasses} ${className}`}
       onClick={onClick}
       disabled={disabled}
       type={type}

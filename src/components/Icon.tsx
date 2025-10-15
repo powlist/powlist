@@ -57,8 +57,8 @@ const Icon: React.FC<IconProps> = ({ name, className = "w-4 h-4", color = "curre
   
   return (
     <div 
-      className={className}
-      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', ...style }}
+      className={`flex items-center justify-center ${className || ''}`}
+      style={style}
       dangerouslySetInnerHTML={{ __html: coloredSvg }}
     />
   )

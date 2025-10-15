@@ -5,6 +5,7 @@ import ContextPopover from './ContextPopover.tsx'
 import SuggestionBox from './SuggestionBox.tsx'
 import ActionButtons from './ActionButtons.tsx'
 import Tooltip from './Tooltip.tsx'
+import Icon from './Icon.tsx'
 import { 
   getRecentItems, 
   searchEntries, 
@@ -341,20 +342,18 @@ const PromptInput: React.FC<PromptInputProps> = ({
     <div className="relative">
       <div 
         className={`
-          bg-white shadow-sm border border-gray-200 
-          flex flex-col gap-1 transition-all duration-200 
-          relative p-3 sm:p-3 
-          hover:border-gray-300 hover:shadow-md
-          ${isFocused ? 'border-blue-500 shadow-md' : ''} 
-          ${disabled ? 'opacity-60 cursor-not-allowed hover:border-gray-200 hover:shadow-sm' : ''}
+          bg-white shadow-sm transition-all duration-200 
+          relative flex flex-col rounded-[1.75rem] min-h-[100px] p-3
+          border border-gray-200
+          ${isFocused ? 'shadow-md border-gray-300' : ''} 
+          ${disabled ? 'opacity-60 cursor-not-allowed' : ''}
         `} 
-        style={{ borderRadius: '1.75rem', minHeight: '100px' }}
         onClick={handleContainerClick}
       >
       {/* Add context button row */}
-      <div className="flex items-center mb-2 gap-1 flex-wrap">
+      <div className="flex items-center gap-1 flex-wrap pb-5">
         <Tooltip 
-          content={selectedContexts.length > 0 ? "Add more context" : "Add context to your message"}
+          content="Add context"
           position="top"
         >
           <button 
@@ -362,7 +361,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
             type="button"
             onClick={handleContextClick}
           >
-            <span className="text-gray-500 text-sm">@</span>
+            <Icon name="IconPlus" className="w-4 h-4" color="#6B7280" />
           </button>
         </Tooltip>
         
@@ -400,7 +399,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
       />
       
       {/* Message text area */}
-      <div className="flex-1 flex items-start relative min-h-[24px] px-2 py-1.5">
+      <div className="flex-1 flex items-start relative min-h-[24px] px-2 pb-4">
         <textarea
           ref={textareaRef}
           value={value}
@@ -411,7 +410,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          className="w-full border-none outline-none bg-transparent text-base leading-6 text-gray-900 resize-none font-inherit min-h-[24px] max-h-[120px] placeholder:text-gray-400 placeholder:text-base disabled:cursor-not-allowed focus:outline-none"
+          className="w-full border-none outline-none bg-transparent resize-none font-normal min-h-[24px] max-h-[120px] disabled:cursor-not-allowed focus:outline-none text-base leading-6 tracking-[-0.32px] text-black placeholder:text-gray-400"
           rows={1}
         />
       </div>

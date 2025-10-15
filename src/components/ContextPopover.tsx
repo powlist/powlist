@@ -311,12 +311,7 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
       
       {/* Submenu rendered outside the scrollable container - only when not searching */}
       {!searchValue.trim() && hoveredCategory && showSubmenu && (
-        <div className="absolute left-full top-0 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50"
-             style={{ 
-               maxHeight: '300px',
-               overflow: 'hidden',
-               top: '0px'
-             }}>
+        <div className="absolute left-full top-0 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-[300px] overflow-hidden">
           <div className="p-2 max-h-60 overflow-y-auto">
             {contextDatabase.entries[hoveredCategory]
               .map((entry, entryIndex) => (

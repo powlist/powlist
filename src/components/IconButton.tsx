@@ -33,23 +33,26 @@ const IconButton: React.FC<IconButtonProps> = ({
   
   const variants: Record<ButtonVariant, string> = {
     default: "bg-gray-300 hover:bg-gray-400",
-    primary: "bg-blue-500 hover:bg-blue-600",
+    primary: "hover:opacity-90",
     secondary: "bg-gray-100 hover:bg-gray-200",
     ghost: "hover:bg-gray-100"
   }
   
   const sizes: Record<ButtonSize, string> = {
-    sm: "w-6 h-6",
-    md: "w-8 h-8",
+    sm: "w-9 h-9",
+    md: "w-9 h-9",
     lg: "w-10 h-10"
   }
   
   const variantClasses = variants[variant] || variants.ghost
   const sizeClasses = sizes[size] || sizes.sm
   
+  const primaryClasses = variant === 'primary' ? 'bg-[#0366dd] w-9 h-9 p-3' : '';
+  const sizeSmClasses = size === 'sm' && variant !== 'primary' ? 'w-9 h-9 p-3' : '';
+  
   const buttonElement = (
     <button
-      className={`${baseClasses} ${variantClasses} ${sizeClasses} ${className}`}
+      className={`${baseClasses} ${variantClasses} ${sizeClasses} ${primaryClasses} ${sizeSmClasses} ${className}`}
       onClick={onClick}
       disabled={disabled}
       type={type}

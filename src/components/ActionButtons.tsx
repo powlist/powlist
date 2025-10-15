@@ -35,7 +35,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         {/* Refine button - only show when there's content */}
         {hasContent && (
           <button 
-            className="px-3 py-1.5 text-sm text-gray-600  hover:bg-gray-100 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+            className="h-8 px-2 py-2 rounded-xl gap-2 text-[#3d3d3d] text-sm font-medium hover:bg-gray-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             onClick={onRefine}
             disabled={disabled}
             type="button"
