@@ -31,7 +31,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
           position="top"
         >
           <button 
-            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             type="button"
             onClick={onContextClick}
             disabled={disabled}
