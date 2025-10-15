@@ -349,7 +349,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
       >
       {/* Context pills row */}
       {selectedContexts.length > 0 && (
-        <div className="flex items-center gap-1 flex-wrap pb-5">
+        <div className="flex items-center gap-1 flex-wrap pb-3">
           {/* User-selected context pills */}
           {selectedContexts.map((context, index) => {
           const category = getContextCategory(context)
@@ -385,7 +385,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
       />
       
       {/* Message text area */}
-      <div className="flex-1 flex items-start relative min-h-[24px] px-2 pb-4">
+      <div className="flex-1 flex items-start relative min-h-[24px] px-2 pt-1 pb-4">
         <textarea
           ref={textareaRef}
           value={value}
