@@ -29,7 +29,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         <Button 
           icon={plusIcon}
           variant="ghost"
-          size="sm"
+          size="md"
           onClick={onContextClick}
           disabled={disabled}
           tooltip="Add context"

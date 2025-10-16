@@ -385,7 +385,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
       />
       
       {/* Message text area */}
-      <div className="flex-1 flex items-start relative min-h-[24px] px-2 pt-1 pb-4">
+      <div className="flex-1 flex items-start relative min-h-[24px] px-2 pt-1 pb-3">
         <textarea
           ref={textareaRef}
           value={value}

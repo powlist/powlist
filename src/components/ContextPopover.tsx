@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react'
-import { getContextCategory, contextDatabase } from '../data/contextDatabase.ts'
+import { contextDatabase } from '../data/contextDatabase.ts'
 import Icon from './Icon.tsx'
 
 interface SearchResult {
@@ -11,25 +11,28 @@ interface SearchResult {
 interface ContextPopoverProps {
   isOpen: boolean;
   onClose: () => void;
-  items?: string[];
   onItemSelect: (item: string) => void;
   searchValue: string;
   onSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
 }
 
+// Define which categories are shown as primary options
+const PRIMARY_CATEGORIES = ['product', 'pages']
+
 const ContextPopover: React.FC<ContextPopoverProps> = ({ 
   isOpen, 
   onClose, 
-  items = [], 
   onItemSelect, 
   searchValue, 
   onSearchChange,
   className = ''
 }) => {
   const popoverRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null)
   const [showSubmenu, setShowSubmenu] = useState(false)
+  const [showMoreSubmenu, setShowMoreSubmenu] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
 
@@ -56,6 +59,7 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
     if (isOpen) {
       setHoveredCategory(null)
       setShowSubmenu(false)
+      setShowMoreSubmenu(false)
       setSelectedIndex(0)
     }
   }, [isOpen])
@@ -152,16 +156,8 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
 
   // Get categories for display
   const categories = Object.values(contextDatabase.categories)
-  
-  // Filter categories based on search
-  const filteredCategories = searchValue.trim() 
-    ? categories.filter(category => 
-        category.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-        contextDatabase.entries[category.id].some(entry => 
-          entry.toLowerCase().includes(searchValue.toLowerCase())
-        )
-      )
-    : categories
+  const primaryCategories = categories.filter(cat => PRIMARY_CATEGORIES.includes(cat.id))
+  const otherCategories = categories.filter(cat => !PRIMARY_CATEGORIES.includes(cat.id))
 
   const handleCategoryClick = (categoryId: string) => {
     console.log('Category clicked:', categoryId)
@@ -171,11 +167,40 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
     // Always open the submenu for the clicked category
     setHoveredCategory(categoryId)
     setShowSubmenu(true)
+    setShowMoreSubmenu(false)
+  }
+
+  const handleMoreClick = () => {
+    console.log('More clicked')
+    setShowMoreSubmenu(true)
+    setShowSubmenu(false)
+    setHoveredCategory(null)
   }
 
   const handleEntrySelect = (entry: string) => {
     onItemSelect(entry)
     setShowSubmenu(false)
+    setShowMoreSubmenu(false)
+  }
+
+  const handleFileAttach = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      console.log('File selected:', file.name)
+      // For now, just log the file
+      alert(`File selected: ${file.name}`)
+      // Reset the input
+      event.target.value = ''
+    }
+  }
+
+  const handleGoogleDriveClick = () => {
+    // Mocked for now
+    alert('Google Drive integration coming soon!')
   }
 
   return (
@@ -183,8 +208,17 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
       ref={popoverRef}
       className={`absolute top-12 left-2 z-50 w-60 bg-white border border-gray-200 rounded-2xl shadow-lg overflow-visible ${className}`}
     >
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        onChange={handleFileChange}
+        className="hidden"
+        accept="*/*"
+      />
+
       {/* Search input */}
-      <div className="p-2 border-gray-100" onClick={(e) => e.stopPropagation()}>
+      <div className="p-3 border-gray-100" onClick={(e) => e.stopPropagation()}>
         <div className="relative">
           <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
             <Icon name="IconMagnifyingGlass" className="w-4 h-4" color="#6B7280" />
@@ -196,7 +230,7 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
             onChange={onSearchChange}
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
-            className="w-full pl-8 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent bg-transparent"
+            className="w-full pl-9 pr-9 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent bg-transparent"
             autoFocus
           />
           {/* Clear search button */}
@@ -215,10 +249,10 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
       </div>
       
       {/* Content based on search state */}
-      <div className="max-h-60 overflow-y-auto">
-        {searchValue.trim() ? (
-          /* Search Results - Grouped by Category with Keyboard Navigation */
-          <div className="p-2">
+      {searchValue.trim() ? (
+        /* Search Results - Grouped by Category */
+        <div className="max-h-60 overflow-y-auto pb-3">
+          <div className="px-3">
             {searchResults.length > 0 ? (
               <div>
                 {Object.values(contextDatabase.categories).map(category => {
@@ -266,52 +300,97 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
               </div>
             )}
           </div>
-        ) : (
-          /* Default Categories List */
-          <div className="relative">
-            {filteredCategories.length > 0 ? (
-              filteredCategories.map((category, index) => (
-                <div
-                  key={category.id}
-                  className="relative"
-                >
-                  <div 
-                    className={`w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 border-gray-100 last:border-b-0 transition-colors duration-150 flex items-center justify-between cursor-pointer ${
-                      index === selectedIndex ? 'bg-gray-100' : ''
-                    }`}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      console.log('Div clicked for:', category.id)
-                      handleCategoryClick(category.id)
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      {/* Category Icon */}
-                      <Icon 
-                        name={category.icon} 
-                        className="w-5 h-5 opacity-50" 
-                        color="#6B7280"
-                      />
-                      <span className="text-sm font-medium">{category.name}</span>
-                    </div>
-                    {/* Chevron */}
-                    <Icon name="IconCaretRight" className="w-4 h-4" color="#9CA3AF" />
-                  </div>
+        </div>
+      ) : (
+        /* Default View: Options + Attachments */
+        <div>
+          {/* Options Section */}
+          <div className="px-1">
+            {primaryCategories.map((category, index) => (
+              <div
+                key={category.id}
+                className={`w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-150 flex items-center justify-between cursor-pointer ${
+                  index === selectedIndex ? 'bg-gray-50' : ''
+                }`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleCategoryClick(category.id)
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  {/* Category Icon */}
+                  <Icon 
+                    name={category.icon} 
+                    className="w-5 h-5" 
+                    color="#1F2937"
+                  />
+                  <span className="text-sm font-normal">{category.name === 'Product' ? 'Products' : category.name === 'Pages' ? 'Locale' : category.name}</span>
                 </div>
-              ))
-            ) : (
-              <div className="px-3 py-1.5 text-center text-sm text-gray-500">
-                No categories available
+                {/* Chevron */}
+                <Icon name="IconCaretRight" className="w-4 h-4" color="#9CA3AF" />
               </div>
-            )}
+            ))}
+            
+            {/* More option */}
+            <div
+              className="w-full px-1 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-150 flex items-center justify-between cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleMoreClick()
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <Icon 
+                  name="IconDotsThreeVertical" 
+                  className="w-5 h-5" 
+                  color="#1F2937"
+                />
+                <span className="text-sm font-normal">More</span>
+              </div>
+              <Icon name="IconCaretRight" className="w-4 h-4" color="#9CA3AF" />
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* Divider */}
+          <div className="my-2 border-t border-gray-200"></div>
+
+          {/* Attachments Section */}
+          <div className="px-1 pb-1">
+            {/* Attach file */}
+            <button
+              onClick={handleFileAttach}
+              className="w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-150 flex items-center gap-3"
+            >
+              <Icon 
+                name="IconPaperclip" 
+                className="w-5 h-5" 
+                color="#1F2937"
+              />
+              <span className="text-sm font-normal">Attach file</span>
+            </button>
+
+            {/* Add from Google Drive */}
+            <button
+              onClick={handleGoogleDriveClick}
+              className="w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-150 flex items-center gap-3"
+            >
+              <div className="w-5 h-5 flex items-center justify-center">
+                {/* Google Drive icon placeholder - using a colorful circle for now */}
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-500 via-green-500 to-yellow-500 flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">G</span>
+                </div>
+              </div>
+              <span className="text-sm font-normal">Add from Google Drive</span>
+            </button>
+          </div>
+        </div>
+      )}
       
-      {/* Submenu rendered outside the scrollable container - only when not searching */}
+      {/* Submenu for category entries */}
       {!searchValue.trim() && hoveredCategory && showSubmenu && (
-        <div className="absolute left-full top-0 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-[300px] overflow-hidden">
+        <div className="absolute left-full top-0 ml-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-[300px] overflow-hidden">
           <div className="p-2 max-h-60 overflow-y-auto">
             {contextDatabase.entries[hoveredCategory]
               .map((entry, entryIndex) => (
@@ -324,6 +403,28 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
                 </button>
               ))
             }
+          </div>
+        </div>
+      )}
+
+      {/* Submenu for More categories */}
+      {!searchValue.trim() && showMoreSubmenu && (
+        <div className="absolute left-full top-0 ml-2 w-60 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-[300px] overflow-hidden">
+          <div className="p-2 max-h-60 overflow-y-auto">
+            {otherCategories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handleCategoryClick(category.id)}
+                className="w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-150 flex items-center gap-3"
+              >
+                <Icon 
+                  name={category.icon} 
+                  className="w-5 h-5" 
+                  color="#1F2937"
+                />
+                <span className="text-sm font-normal">{category.name}</span>
+              </button>
+            ))}
           </div>
         </div>
       )}
