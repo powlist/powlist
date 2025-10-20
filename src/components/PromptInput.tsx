@@ -4,8 +4,6 @@ import ContextPopover from './ContextPopover.tsx'
 import SuggestionBox from './SuggestionBox.tsx'
 import ActionButtons from './ActionButtons.tsx'
 import { 
-  getRecentItems, 
-  searchEntries, 
   addToRecentItems, 
   getContextCategory
 } from '../data/contextDatabase.ts'
@@ -34,14 +32,12 @@ const PromptInput: React.FC<PromptInputProps> = ({
   const [suggestion, setSuggestion] = useState('')
   const [displayedSuggestion, setDisplayedSuggestion] = useState('')
   const [isTyping, setIsTyping] = useState(false)
-  const [suggestionAccepted, setSuggestionAccepted] = useState(false)
   const [showContextPopover, setShowContextPopover] = useState(false)
   const [contextSearch, setContextSearch] = useState('')
-  const [recentItems, setRecentItems] = useState<string[]>(getRecentItems())
   const [selectedContexts, setSelectedContexts] = useState<string[]>([])
   const [pillWidths, setPillWidths] = useState<Record<number, number>>({})
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pillRefs = useRef<Record<number, HTMLDivElement | null>>({})
 
 
@@ -136,7 +132,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
   }
 
   // Typing animation effect
-  const typeSuggestion = (text: string, speed: number = 5): NodeJS.Timeout => {
+  const typeSuggestion = (text: string, speed: number = 5): ReturnType<typeof setInterval> => {
     setIsTyping(true)
     setDisplayedSuggestion('')
     
@@ -158,7 +154,6 @@ const PromptInput: React.FC<PromptInputProps> = ({
   useEffect(() => {
     // Reset suggestion state if input is empty
     if (value.trim().length === 0) {
-      setSuggestionAccepted(false)
       setShowSuggestion(false)
       setDisplayedSuggestion('')
     }
@@ -229,7 +224,6 @@ const PromptInput: React.FC<PromptInputProps> = ({
       onSend(messageToSend)
       setValue('')
       setSelectedContexts([]) // Clear selected contexts after sending
-      setSuggestionAccepted(false) // Reset suggestion state when sending
     }
   }
 
@@ -255,7 +249,6 @@ const PromptInput: React.FC<PromptInputProps> = ({
     setShowSuggestion(false)
     setDisplayedSuggestion('')
     setIsTyping(false)
-    setSuggestionAccepted(true)
     if (textareaRef.current) {
       textareaRef.current.focus()
     }
@@ -285,7 +278,6 @@ const PromptInput: React.FC<PromptInputProps> = ({
     
     // Add to recent items using database function
     addToRecentItems(item)
-    setRecentItems(getRecentItems())
     
     // Focus back to textarea
     if (textareaRef.current) {
@@ -303,7 +295,6 @@ const PromptInput: React.FC<PromptInputProps> = ({
       if (newSuggestion) {
         setSuggestion(newSuggestion)
         setShowSuggestion(true)
-        setSuggestionAccepted(false)
         
         // Start typing animation after a short delay
         typingTimeoutRef.current = setTimeout(() => {
@@ -314,7 +305,6 @@ const PromptInput: React.FC<PromptInputProps> = ({
         const genericSuggestion = `Refine and expand on: "${value.trim()}". Provide more specific details, context, and actionable steps to make this request more comprehensive and effective.`
         setSuggestion(genericSuggestion)
         setShowSuggestion(true)
-        setSuggestionAccepted(false)
         
         // Start typing animation after a short delay
         typingTimeoutRef.current = setTimeout(() => {
@@ -324,16 +314,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
     }
   }
 
-
-  const isEmpty = value.trim() === ''
   const hasContent = value.trim().length > 0
-
-  // Filter items based on search - use database search if there's a search term
-  const filteredItems = contextSearch.trim() 
-    ? searchEntries(contextSearch)
-    : recentItems.filter(item => 
-        item.toLowerCase().includes(contextSearch.toLowerCase())
-      )
 
   return (
     <div className="relative">
@@ -378,7 +359,6 @@ const PromptInput: React.FC<PromptInputProps> = ({
       <ContextPopover
         isOpen={showContextPopover}
         onClose={() => setShowContextPopover(false)}
-        items={filteredItems}
         onItemSelect={handleContextItemSelect}
         searchValue={contextSearch}
         onSearchChange={handleContextSearch}

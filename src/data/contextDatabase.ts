@@ -16,10 +16,10 @@ export interface ContextDatabase {
 
 export const contextDatabase: ContextDatabase = {
   categories: {
-    pages: {
-      id: 'pages',
-      name: 'Pages',
-      icon: 'page',
+    locales: {
+      id: 'locales',
+      name: 'Locales',
+      icon: 'IconGlobeHemisphereWest',
       iconColor: '#6B7280',
       description: 'Website pages and content'
     },
@@ -76,17 +76,25 @@ export const contextDatabase: ContextDatabase = {
 
   // Mocked data for each category
   entries: {
-    pages: [
-      'Homepage Design',
-      'Product Catalog Page',
-      'About Us Page',
-      'Contact Page',
-      'Blog Landing Page',
-      'FAQ Section',
-      'Terms of Service',
-      'Privacy Policy',
-      'Landing Page Template',
-      'Product Detail Page'
+    locales: [
+      'English (US)',
+      'English (UK)',
+      'Spanish (Spain)',
+      'Spanish (Mexico)',
+      'French (France)',
+      'French (Canada)',
+      'German',
+      'Italian',
+      'Portuguese (Brazil)',
+      'Portuguese (Portugal)',
+      'Japanese',
+      'Korean',
+      'Chinese (Simplified)',
+      'Chinese (Traditional)',
+      'Dutch',
+      'Russian',
+      'Arabic',
+      'Hindi'
     ],
     product: [
       'Nike Air Max 270',
