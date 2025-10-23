@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, forwardRef } from 'react'
+import React, { forwardRef } from 'react'
 import Tooltip from './Tooltip.tsx'
 import Icon from './Icon.tsx'
 
@@ -43,15 +43,13 @@ const Pill = forwardRef<HTMLDivElement, PillProps>(({
   iconColor = 'var(--pill-icon-color, #6B7280)',
   ...props 
 }, ref) => {
-  const [contentWidth, setContentWidth] = useState<number | null>(null)
-  const contentRef = useRef<HTMLSpanElement>(null)
   
-  const baseClasses = "inline-flex items-center gap-0.5 pl-1 pr-3 h-8 text-sm rounded-full transition-colors duration-200"
-  const iconSize = "w-4 h-4"
+  const baseClasses = "inline-flex items-center rounded-full transition-colors duration-200"
+  const iconSize = "w-5 h-5"
   
   const variants: Record<PillVariant, string> = {
-    default: "text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300",
-    removable: "text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+    default: "text-[#1f1f1f] bg-white hover:bg-gray-50",
+    removable: "text-[#1f1f1f] bg-white hover:bg-gray-50"
   }
   
   const variantClasses = variants[variant] || variants.default
@@ -59,24 +57,10 @@ const Pill = forwardRef<HTMLDivElement, PillProps>(({
   // Apply disabled styles when disabled prop is true
   const disabledClasses = disabled ? "text-gray-400 bg-gray-100 border border-gray-200 cursor-not-allowed opacity-75" : ""
   
-  // Measure content width on mount and when content changes
-  useEffect(() => {
-    if (contentRef.current && showRemove) {
-      const width = contentRef.current.offsetWidth
-      setContentWidth(width)
-    }
-  }, [children, showRemove])
-  
   return (
     <div
       ref={ref}
-      className={`group relative ${baseClasses} ${variantClasses} ${disabledClasses} ${className}`}
-      style={{
-        width: 'fit-content',
-        maxWidth: '200px',
-        minWidth: 'fit-content',
-        flexShrink: 0
-      }}
+      className={`group relative ${baseClasses} ${variantClasses} ${disabledClasses} ${className} w-fit max-w-[200px] shrink-0 h-8 border border-[#e0e0e0] pl-2 pr-3 py-1 gap-2`}
       {...props}
     >
       {/* Icon container with same size as button */}
@@ -118,8 +102,7 @@ const Pill = forwardRef<HTMLDivElement, PillProps>(({
       )}
       
       <span 
-        ref={contentRef}
-        className="truncate text-sm"
+        className="truncate font-medium text-sm leading-5 tracking-[-0.14px] text-[#1f1f1f]"
       >
         {children}
       </span>

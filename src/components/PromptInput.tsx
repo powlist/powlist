@@ -1,13 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react'
 import Pill from './Pill.tsx'
-import Button from './Button.tsx'
 import ContextPopover from './ContextPopover.tsx'
 import SuggestionBox from './SuggestionBox.tsx'
 import ActionButtons from './ActionButtons.tsx'
-import Tooltip from './Tooltip.tsx'
 import { 
-  getRecentItems, 
-  searchEntries, 
   addToRecentItems, 
   getContextCategory
 } from '../data/contextDatabase.ts'
@@ -36,14 +32,12 @@ const PromptInput: React.FC<PromptInputProps> = ({
   const [suggestion, setSuggestion] = useState('')
   const [displayedSuggestion, setDisplayedSuggestion] = useState('')
   const [isTyping, setIsTyping] = useState(false)
-  const [suggestionAccepted, setSuggestionAccepted] = useState(false)
   const [showContextPopover, setShowContextPopover] = useState(false)
   const [contextSearch, setContextSearch] = useState('')
-  const [recentItems, setRecentItems] = useState<string[]>(getRecentItems())
   const [selectedContexts, setSelectedContexts] = useState<string[]>([])
   const [pillWidths, setPillWidths] = useState<Record<number, number>>({})
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pillRefs = useRef<Record<number, HTMLDivElement | null>>({})
 
 
@@ -138,7 +132,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
   }
 
   // Typing animation effect
-  const typeSuggestion = (text: string, speed: number = 5): NodeJS.Timeout => {
+  const typeSuggestion = (text: string, speed: number = 5): ReturnType<typeof setInterval> => {
     setIsTyping(true)
     setDisplayedSuggestion('')
     
@@ -160,7 +154,6 @@ const PromptInput: React.FC<PromptInputProps> = ({
   useEffect(() => {
     // Reset suggestion state if input is empty
     if (value.trim().length === 0) {
-      setSuggestionAccepted(false)
       setShowSuggestion(false)
       setDisplayedSuggestion('')
     }
@@ -231,7 +224,6 @@ const PromptInput: React.FC<PromptInputProps> = ({
       onSend(messageToSend)
       setValue('')
       setSelectedContexts([]) // Clear selected contexts after sending
-      setSuggestionAccepted(false) // Reset suggestion state when sending
     }
   }
 
@@ -257,7 +249,6 @@ const PromptInput: React.FC<PromptInputProps> = ({
     setShowSuggestion(false)
     setDisplayedSuggestion('')
     setIsTyping(false)
-    setSuggestionAccepted(true)
     if (textareaRef.current) {
       textareaRef.current.focus()
     }
@@ -287,7 +278,6 @@ const PromptInput: React.FC<PromptInputProps> = ({
     
     // Add to recent items using database function
     addToRecentItems(item)
-    setRecentItems(getRecentItems())
     
     // Focus back to textarea
     if (textareaRef.current) {
@@ -305,7 +295,6 @@ const PromptInput: React.FC<PromptInputProps> = ({
       if (newSuggestion) {
         setSuggestion(newSuggestion)
         setShowSuggestion(true)
-        setSuggestionAccepted(false)
         
         // Start typing animation after a short delay
         typingTimeoutRef.current = setTimeout(() => {
@@ -316,7 +305,6 @@ const PromptInput: React.FC<PromptInputProps> = ({
         const genericSuggestion = `Refine and expand on: "${value.trim()}". Provide more specific details, context, and actionable steps to make this request more comprehensive and effective.`
         setSuggestion(genericSuggestion)
         setShowSuggestion(true)
-        setSuggestionAccepted(false)
         
         // Start typing animation after a short delay
         typingTimeoutRef.current = setTimeout(() => {
@@ -326,48 +314,25 @@ const PromptInput: React.FC<PromptInputProps> = ({
     }
   }
 
-
-  const isEmpty = value.trim() === ''
   const hasContent = value.trim().length > 0
-
-  // Filter items based on search - use database search if there's a search term
-  const filteredItems = contextSearch.trim() 
-    ? searchEntries(contextSearch)
-    : recentItems.filter(item => 
-        item.toLowerCase().includes(contextSearch.toLowerCase())
-      )
 
   return (
     <div className="relative">
       <div 
         className={`
-          bg-white shadow-sm border border-gray-200 
-          flex flex-col gap-1 transition-all duration-200 
-          relative p-3 sm:p-3 
-          hover:border-gray-300 hover:shadow-md
-          ${isFocused ? 'border-blue-500 shadow-md' : ''} 
-          ${disabled ? 'opacity-60 cursor-not-allowed hover:border-gray-200 hover:shadow-sm' : ''}
+          bg-white shadow-sm transition-all duration-200 
+          relative flex flex-col rounded-[1.75rem] min-h-[100px] p-3
+          border border-gray-200
+          ${isFocused ? 'shadow-md border-gray-300' : ''} 
+          ${disabled ? 'opacity-60 cursor-not-allowed' : ''}
         `} 
-        style={{ borderRadius: '1.75rem', minHeight: '100px' }}
         onClick={handleContainerClick}
       >
-      {/* Add context button row */}
-      <div className="flex items-center mb-2 gap-1 flex-wrap">
-        <Tooltip 
-          content={selectedContexts.length > 0 ? "Add more context" : "Add context to your message"}
-          position="top"
-        >
-          <button 
-            className="w-8 h-8 flex items-center justify-center text-sm text-gray-600 bg-white hover:bg-gray-50 border border-gray-200 rounded-full transition-all duration-200 hover:border-gray-300"
-            type="button"
-            onClick={handleContextClick}
-          >
-            <span className="text-gray-500 text-sm">@</span>
-          </button>
-        </Tooltip>
-        
-        {/* User-selected context pills */}
-        {selectedContexts.map((context, index) => {
+      {/* Context pills row */}
+      {selectedContexts.length > 0 && (
+        <div className="flex items-center gap-1 flex-wrap pb-3">
+          {/* User-selected context pills */}
+          {selectedContexts.map((context, index) => {
           const category = getContextCategory(context)
           
           return (
@@ -387,20 +352,20 @@ const PromptInput: React.FC<PromptInputProps> = ({
             </Pill>
           )
         })}
-      </div>
+        </div>
+      )}
 
       {/* Context Popover */}
       <ContextPopover
         isOpen={showContextPopover}
         onClose={() => setShowContextPopover(false)}
-        items={filteredItems}
         onItemSelect={handleContextItemSelect}
         searchValue={contextSearch}
         onSearchChange={handleContextSearch}
       />
       
       {/* Message text area */}
-      <div className="flex-1 flex items-start relative min-h-[24px] px-2 py-1.5">
+      <div className="flex-1 flex items-start relative min-h-[24px] px-2 pt-1 pb-3">
         <textarea
           ref={textareaRef}
           value={value}
@@ -411,7 +376,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          className="w-full border-none outline-none bg-transparent text-base leading-6 text-gray-900 resize-none font-inherit min-h-[24px] max-h-[120px] placeholder:text-gray-400 placeholder:text-base disabled:cursor-not-allowed focus:outline-none"
+          className="w-full border-none outline-none bg-transparent resize-none font-normal min-h-[24px] max-h-[120px] disabled:cursor-not-allowed focus:outline-none text-base leading-6 tracking-[-0.32px] text-black placeholder:text-gray-400"
           rows={1}
         />
       </div>
@@ -431,6 +396,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
         disabled={disabled}
         onRefine={handleRefine}
         onSend={handleSend}
+        onContextClick={handleContextClick}
       />
       </div>
     </div>

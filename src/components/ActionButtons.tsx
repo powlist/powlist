@@ -7,6 +7,7 @@ interface ActionButtonsProps {
   disabled: boolean;
   onRefine: () => void;
   onSend: () => void;
+  onContextClick: () => void;
   className?: string;
 }
 
@@ -15,34 +16,36 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   disabled, 
   onRefine, 
   onSend,
+  onContextClick,
   className = ''
 }) => {
-  const attachmentIcon = <Icon name="IconPaperclip" className="w-5 h-5" color="#6B7280" />
+  const plusIcon = <Icon name="IconPlus" className="w-4 h-4" color="#6B7280" />
   const sendIcon = <Icon name="IconArrowUp" className="w-5 h-5" color="white" />
 
   return (
     <div className={`flex items-center justify-between ${className}`}>
       <div className="flex items-center gap-1">
-        {/* Attachment button - always visible */}
+        {/* Add context button - always visible */}
         <Button 
-          icon={attachmentIcon}
+          icon={plusIcon}
           variant="ghost"
+          size="md"
+          onClick={onContextClick}
           disabled={disabled}
-          size='sm'
-          tooltip="Attach file"
+          tooltip="Add context"
         />
         
         {/* Refine button - only show when there's content */}
         {hasContent && (
-          <button 
-            className="px-3 py-1.5 text-sm text-gray-600  hover:bg-gray-100 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onRefine}
             disabled={disabled}
-            type="button"
+            shortcut="⌘⇧↵"
           >
             Refine prompt
-            <span className="text-sm opacity-50 font-normal">⌘⇧↵</span>
-          </button>
+          </Button>
         )}
       </div>
       

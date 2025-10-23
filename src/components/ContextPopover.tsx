@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react'
-import { getContextCategory, contextDatabase } from '../data/contextDatabase.ts'
+import { contextDatabase } from '../data/contextDatabase.ts'
 import Icon from './Icon.tsx'
 
 interface SearchResult {
@@ -11,27 +11,86 @@ interface SearchResult {
 interface ContextPopoverProps {
   isOpen: boolean;
   onClose: () => void;
-  items?: string[];
   onItemSelect: (item: string) => void;
   searchValue: string;
   onSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
 }
 
+// MenuItem Component - Reusable option/item component
+interface MenuItemProps {
+  icon?: string;
+  iconNode?: React.ReactNode;
+  label: string;
+  showChevron?: boolean;
+  isHovered?: boolean;
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onMouseEnter?: (e: React.MouseEvent<HTMLDivElement>) => void;
+}
+
+const MenuItem: React.FC<MenuItemProps> = ({ 
+  icon, 
+  iconNode, 
+  label, 
+  showChevron = false, 
+  isHovered = false,
+  onClick,
+  onMouseEnter
+}) => {
+  return (
+    <div
+      className={`w-full px-2 py-2.5 text-left text-sm hover:bg-gray-50 rounded-lg transition-colors duration-150 flex items-center justify-between cursor-pointer group ${
+        isHovered ? 'bg-gray-50' : ''
+      }`}
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+    >
+      <div className="flex items-center gap-2">
+        {icon && (
+          <span className={`transition-colors duration-150 ${
+            isHovered ? 'text-gray-600' : 'text-gray-400 group-hover:text-gray-600'
+          }`}>
+            <Icon 
+              name={icon} 
+              className="w-5 h-5"
+            />
+          </span>
+        )}
+        {iconNode && iconNode}
+        <span className={`text-sm font-normal transition-colors duration-150 ${
+          isHovered ? 'text-gray-900' : 'text-gray-600 group-hover:text-gray-900'
+        }`}>{label}</span>
+      </div>
+      {showChevron && (
+        <span className="text-gray-400 group-hover:text-gray-500 transition-colors duration-150">
+          <Icon name="IconCaretRight" className="w-4 h-4" />
+        </span>
+      )}
+    </div>
+  )
+}
+
+// Define which categories are shown as primary options
+const PRIMARY_CATEGORIES = ['product', 'locales']
+
 const ContextPopover: React.FC<ContextPopoverProps> = ({ 
   isOpen, 
   onClose, 
-  items = [], 
   onItemSelect, 
   searchValue, 
   onSearchChange,
   className = ''
 }) => {
   const popoverRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const moreSubmenuRef = useRef<HTMLDivElement>(null)
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null)
   const [showSubmenu, setShowSubmenu] = useState(false)
+  const [showMoreSubmenu, setShowMoreSubmenu] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [submenuTop, setSubmenuTop] = useState(0)
+  const [thirdLevelTop, setThirdLevelTop] = useState(0)
 
   // Handle click outside to close popover
   useEffect(() => {
@@ -56,6 +115,7 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
     if (isOpen) {
       setHoveredCategory(null)
       setShowSubmenu(false)
+      setShowMoreSubmenu(false)
       setSelectedIndex(0)
     }
   }, [isOpen])
@@ -152,30 +212,94 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
 
   // Get categories for display
   const categories = Object.values(contextDatabase.categories)
-  
-  // Filter categories based on search
-  const filteredCategories = searchValue.trim() 
-    ? categories.filter(category => 
-        category.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-        contextDatabase.entries[category.id].some(entry => 
-          entry.toLowerCase().includes(searchValue.toLowerCase())
-        )
-      )
-    : categories
+  const primaryCategories = categories.filter(cat => PRIMARY_CATEGORIES.includes(cat.id))
+  const otherCategories = categories.filter(cat => !PRIMARY_CATEGORIES.includes(cat.id))
 
-  const handleCategoryClick = (categoryId: string) => {
+  const handleCategoryClick = (categoryId: string, event?: React.MouseEvent<HTMLDivElement | HTMLButtonElement>) => {
     console.log('Category clicked:', categoryId)
     console.log('Current hoveredCategory:', hoveredCategory)
     console.log('Current showSubmenu:', showSubmenu)
     
+    // Calculate position relative to popover
+    if (event) {
+      const target = event.currentTarget
+      const popover = popoverRef.current
+      if (target && popover) {
+        const targetRect = target.getBoundingClientRect()
+        const popoverRect = popover.getBoundingClientRect()
+        setSubmenuTop(targetRect.top - popoverRect.top)
+      }
+    }
+    
     // Always open the submenu for the clicked category
     setHoveredCategory(categoryId)
     setShowSubmenu(true)
+    setShowMoreSubmenu(false)
+  }
+
+  const handleMoreClick = (event?: React.MouseEvent<HTMLDivElement>) => {
+    console.log('More clicked')
+    
+    // Calculate position relative to popover
+    if (event) {
+      const target = event.currentTarget
+      const popover = popoverRef.current
+      if (target && popover) {
+        const targetRect = target.getBoundingClientRect()
+        const popoverRect = popover.getBoundingClientRect()
+        setSubmenuTop(targetRect.top - popoverRect.top)
+      }
+    }
+    
+    setShowMoreSubmenu(true)
+    setShowSubmenu(false)
+    setHoveredCategory(null)
+  }
+
+  const handleMoreCategoryClick = (categoryId: string, event?: React.MouseEvent<HTMLDivElement>) => {
+    console.log('More category clicked:', categoryId)
+    
+    // Calculate position relative to the More submenu
+    if (event) {
+      const target = event.currentTarget
+      const moreSubmenu = moreSubmenuRef.current
+      if (target && moreSubmenu) {
+        const targetRect = target.getBoundingClientRect()
+        const moreSubmenuRect = moreSubmenu.getBoundingClientRect()
+        setThirdLevelTop(targetRect.top - moreSubmenuRect.top)
+      }
+    }
+    
+    // Keep More submenu open and show category entries in third level
+    setHoveredCategory(categoryId)
+    setShowSubmenu(true)
+    // Keep showMoreSubmenu true to maintain the More categories visible
   }
 
   const handleEntrySelect = (entry: string) => {
     onItemSelect(entry)
     setShowSubmenu(false)
+    setShowMoreSubmenu(false)
+  }
+
+  const handleFileAttach = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      console.log('File selected:', file.name)
+      // For now, just log the file
+      alert(`File selected: ${file.name}`)
+      // Reset the input
+      event.target.value = ''
+    }
+  }
+
+  const handleGoogleDriveClick = () => {
+    // Mocked for now
+    alert('Google Drive integration coming soon!')
   }
 
   return (
@@ -183,8 +307,17 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
       ref={popoverRef}
       className={`absolute top-12 left-2 z-50 w-60 bg-white border border-gray-200 rounded-2xl shadow-lg overflow-visible ${className}`}
     >
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        onChange={handleFileChange}
+        className="hidden"
+        accept="*/*"
+      />
+
       {/* Search input */}
-      <div className="p-2 border-gray-100" onClick={(e) => e.stopPropagation()}>
+      <div className="p-3 border-gray-100" onClick={(e) => e.stopPropagation()}>
         <div className="relative">
           <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
             <Icon name="IconMagnifyingGlass" className="w-4 h-4" color="#6B7280" />
@@ -196,7 +329,7 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
             onChange={onSearchChange}
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
-            className="w-full pl-8 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent bg-transparent"
+            className="w-full pl-9 pr-9 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent bg-transparent"
             autoFocus
           />
           {/* Clear search button */}
@@ -215,10 +348,10 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
       </div>
       
       {/* Content based on search state */}
-      <div className="max-h-60 overflow-y-auto">
-        {searchValue.trim() ? (
-          /* Search Results - Grouped by Category with Keyboard Navigation */
-          <div className="p-2">
+      {searchValue.trim() ? (
+        /* Search Results - Grouped by Category */
+        <div className="max-h-60 overflow-y-auto pb-3">
+          <div className="px-3">
             {searchResults.length > 0 ? (
               <div>
                 {Object.values(contextDatabase.categories).map(category => {
@@ -266,67 +399,135 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
               </div>
             )}
           </div>
-        ) : (
-          /* Default Categories List */
-          <div className="relative">
-            {filteredCategories.length > 0 ? (
-              filteredCategories.map((category, index) => (
-                <div
-                  key={category.id}
-                  className="relative"
-                >
-                  <div 
-                    className={`w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 border-gray-100 last:border-b-0 transition-colors duration-150 flex items-center justify-between cursor-pointer ${
-                      index === selectedIndex ? 'bg-gray-100' : ''
-                    }`}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      console.log('Div clicked for:', category.id)
-                      handleCategoryClick(category.id)
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      {/* Category Icon */}
-                      <Icon 
-                        name={category.icon} 
-                        className="w-5 h-5 opacity-50" 
-                        color="#6B7280"
-                      />
-                      <span className="text-sm font-medium">{category.name}</span>
-                    </div>
-                    {/* Chevron */}
-                    <Icon name="IconCaretRight" className="w-4 h-4" color="#9CA3AF" />
+        </div>
+      ) : (
+        /* Default View: Options + Attachments */
+        <div>
+          {/* Options Section */}
+          <div className="px-1.5">
+            {primaryCategories.map((category) => (
+              <MenuItem
+                key={category.id}
+                icon={category.icon}
+                label={category.name === 'Product' ? 'Products' : category.name === 'locales' ? 'Locale' : category.name}
+                showChevron={true}
+                isHovered={showSubmenu && !showMoreSubmenu && hoveredCategory === category.id}
+                onMouseEnter={(e) => handleCategoryClick(category.id, e)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleCategoryClick(category.id, e)
+                }}
+              />
+            ))}
+            
+            {/* More option */}
+            <MenuItem
+              icon="IconDotsThreeVertical"
+              label="More"
+              showChevron={true}
+              isHovered={showMoreSubmenu}
+              onMouseEnter={(e) => handleMoreClick(e)}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleMoreClick(e)
+              }}
+            />
+          </div>
+
+          {/* Divider */}
+          <div className="my-2 border-t border-gray-200"></div>
+
+          {/* Attachments Section */}
+          <div className="px-1.5 pb-1.5">
+            {/* Attach file */}
+            <MenuItem
+              icon="IconPaperclip"
+              label="Attach file"
+              onClick={handleFileAttach}
+            />
+
+            {/* Add from Google Drive */}
+            <MenuItem
+              iconNode={
+                <div className="w-5 h-5 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-500 via-green-500 to-yellow-500 flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">G</span>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="px-3 py-1.5 text-center text-sm text-gray-500">
-                No categories available
-              </div>
-            )}
+              }
+              label="Add from Google Drive"
+              onClick={handleGoogleDriveClick}
+            />
           </div>
-        )}
-      </div>
+        </div>
+      )}
       
-      {/* Submenu rendered outside the scrollable container - only when not searching */}
-      {!searchValue.trim() && hoveredCategory && showSubmenu && (
-        <div className="absolute left-full top-0 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50"
-             style={{ 
-               maxHeight: '300px',
-               overflow: 'hidden',
-               top: '0px'
-             }}>
-          <div className="p-2 max-h-60 overflow-y-auto">
+      {/* Submenu for category entries (second level - for primary categories) */}
+      {!searchValue.trim() && hoveredCategory && showSubmenu && !showMoreSubmenu && (
+        <div 
+          className="absolute left-full -ml-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-lg z-50 max-h-[300px] overflow-hidden"
+          style={{ top: `${submenuTop}px` }}
+        >
+          <div className="px-1.5 py-1.5 max-h-60 overflow-y-auto">
             {contextDatabase.entries[hoveredCategory]
               .map((entry, entryIndex) => (
-                <button
+                <MenuItem
                   key={entryIndex}
+                  label={entry}
                   onClick={() => handleEntrySelect(entry)}
-                  className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-150"
-                >
-                  {entry}
-                </button>
+                />
+              ))
+            }
+          </div>
+        </div>
+      )}
+
+      {/* Submenu for More categories */}
+      {!searchValue.trim() && showMoreSubmenu && (
+        <div 
+          ref={moreSubmenuRef}
+          className="absolute left-full -ml-2 w-60 bg-white border border-gray-200 rounded-2xl shadow-lg z-50 max-h-[300px] overflow-hidden"
+          style={{ top: `${submenuTop}px` }}
+        >
+          <div className="px-1.5 py-1.5 max-h-60 overflow-y-auto">
+            {otherCategories.map((category) => (
+              <MenuItem
+                key={category.id}
+                icon={category.icon}
+                label={category.name}
+                showChevron={true}
+                isHovered={showSubmenu && hoveredCategory === category.id}
+                onMouseEnter={(e) => handleMoreCategoryClick(category.id, e)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleMoreCategoryClick(category.id, e)
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Third level - Category entries from More submenu */}
+      {!searchValue.trim() && showMoreSubmenu && hoveredCategory && showSubmenu && (
+        <div 
+          className="absolute left-full -ml-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-lg z-[60] max-h-[300px] overflow-hidden"
+          style={{ 
+            top: `${submenuTop + thirdLevelTop}px`,
+            left: 'calc(100% + 14.5rem)'
+          }}
+        >
+          <div className="px-1.5 py-1.5 max-h-60 overflow-y-auto">
+            {contextDatabase.entries[hoveredCategory]
+              .map((entry, entryIndex) => (
+                <MenuItem
+                  key={entryIndex}
+                  label={entry}
+                  onClick={() => handleEntrySelect(entry)}
+                />
               ))
             }
           </div>
