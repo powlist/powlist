@@ -3,6 +3,7 @@ import Pill from './Pill.tsx'
 import ContextPopover from './ContextPopover.tsx'
 import SuggestionBox from './SuggestionBox.tsx'
 import ActionButtons from './ActionButtons.tsx'
+import StyledTextInput from './StyledTextInput.tsx'
 import { 
   addToRecentItems, 
   getContextCategory
@@ -189,9 +190,18 @@ const PromptInput: React.FC<PromptInputProps> = ({
 
 
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setValue(e.target.value)
-  }
+  // Handle @ detection when value changes
+  useEffect(() => {
+    // Check for @ character to trigger context popover (simple shortcut)
+    if (value.endsWith('@')) {
+      // @ was just typed, open popover
+      setShowContextPopover(true)
+      setContextSearch('') // Start with empty search
+    } else if (value.endsWith('@ ')) {
+      // Space after @, close popover
+      setShowContextPopover(false)
+    }
+  }, [value])
 
   const handleFocus = () => {
     setIsFocused(true)
@@ -269,20 +279,33 @@ const PromptInput: React.FC<PromptInputProps> = ({
   }
 
   const handleContextItemSelect = (item: string) => {
-    // Add the selected item to contexts if not already selected
-    if (!selectedContexts.includes(item)) {
-      setSelectedContexts(prev => [...prev, item])
+    // Check if we're in @ mode (popover opened via @)
+    const isAtMode = value.endsWith('@')
+    
+    if (isAtMode) {
+      // Handle @ selection - replace @ with @item and add to contexts
+      const newValue = value.slice(0, -1) + `@${item} ` // Remove @ and add @item with space
+      setValue(newValue)
+      
+      // Also add to selected contexts as a pill
+      if (!selectedContexts.includes(item)) {
+        setSelectedContexts(prev => [...prev, item])
+      }
+      
+      // Close popover
+      setShowContextPopover(false)
+      setContextSearch('')
+    } else {
+      // Handle regular context selection (plus button behavior)
+      if (!selectedContexts.includes(item)) {
+        setSelectedContexts(prev => [...prev, item])
+      }
+      // Keep popover open for multiple selections
+      setContextSearch('')
     }
-    // Keep popover open for multiple selections
-    setContextSearch('')
     
     // Add to recent items using database function
     addToRecentItems(item)
-    
-    // Focus back to textarea
-    if (textareaRef.current) {
-      textareaRef.current.focus()
-    }
   }
 
   const handleRemoveContext = (itemToRemove: string) => {
@@ -366,17 +389,16 @@ const PromptInput: React.FC<PromptInputProps> = ({
       
       {/* Message text area */}
       <div className="flex-1 flex items-start relative min-h-[24px] px-2 pt-1 pb-3">
-        <textarea
-          ref={textareaRef}
+        <StyledTextInput
           value={value}
-          onChange={handleChange}
+          onChange={setValue}
           onFocus={handleFocus}
           onBlur={handleBlur}
           onKeyPress={handleKeyPress}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          className="w-full border-none outline-none bg-transparent resize-none font-normal min-h-[24px] max-h-[120px] disabled:cursor-not-allowed focus:outline-none text-base leading-6 tracking-[-0.32px] text-black placeholder:text-gray-400"
+          className="placeholder:text-gray-400"
           rows={1}
         />
       </div>
