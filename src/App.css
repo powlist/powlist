@@ -29,7 +29,7 @@ h1 {
 .demo-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 45px;
 }
 
 .demo-section h2 {

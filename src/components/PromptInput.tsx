@@ -37,6 +37,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
   const [contextSearch, setContextSearch] = useState('')
   const [selectedContexts, setSelectedContexts] = useState<string[]>([])
   const [pillWidths, setPillWidths] = useState<Record<number, number>>({})
+  const [focusAfterContextSelect, setFocusAfterContextSelect] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pillRefs = useRef<Record<number, HTMLDivElement | null>>({})
@@ -203,6 +204,13 @@ const PromptInput: React.FC<PromptInputProps> = ({
     }
   }, [value])
 
+  // Reset focus flag after it's been used
+  useEffect(() => {
+    if (focusAfterContextSelect) {
+      setFocusAfterContextSelect(false)
+    }
+  }, [focusAfterContextSelect])
+
   const handleFocus = () => {
     setIsFocused(true)
   }
@@ -295,6 +303,9 @@ const PromptInput: React.FC<PromptInputProps> = ({
       // Close popover
       setShowContextPopover(false)
       setContextSearch('')
+      
+      // Trigger focus after context selection
+      setFocusAfterContextSelect(true)
     } else {
       // Handle regular context selection (plus button behavior)
       if (!selectedContexts.includes(item)) {
@@ -302,6 +313,9 @@ const PromptInput: React.FC<PromptInputProps> = ({
       }
       // Keep popover open for multiple selections
       setContextSearch('')
+      
+      // Trigger focus after context selection
+      setFocusAfterContextSelect(true)
     }
     
     // Add to recent items using database function
@@ -343,9 +357,9 @@ const PromptInput: React.FC<PromptInputProps> = ({
     <div className="relative">
       <div 
         className={`
-          bg-white shadow-sm transition-all duration-200 
-          relative flex flex-col rounded-[1.75rem] min-h-[100px] p-3
-          border border-gray-200
+          bg-gray-100 transition-all duration-200 
+          relative flex flex-col gap-0 rounded-[1.75rem] min-h-[100px] p-3
+          border border-gray-200 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.12)]
           ${isFocused ? 'shadow-md border-gray-300' : ''} 
           ${disabled ? 'opacity-60 cursor-not-allowed' : ''}
         `} 
@@ -400,6 +414,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
           disabled={disabled}
           className="placeholder:text-gray-400"
           rows={1}
+          focusAfterUpdate={focusAfterContextSelect}
         />
       </div>
       
