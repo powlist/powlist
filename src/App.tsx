@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import PromptInput from './components/PromptInput.tsx'
+// import PromptInput from './components/PromptInput.tsx'
 import Icon from './components/Icon.tsx'
 import { normalizeSlug } from './utils/slugNormalizer.ts'
 import './App.css'
@@ -73,34 +73,7 @@ function App() {
     // Detect Command+A (select all)
     if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
       isSelectingAllRef.current = true
-      // Let the default behavior happen, then we'll ensure selection in onChange
-      return
-    }
-    
-    // Intercept space key and convert to hyphen
-    if (e.key === ' ' || e.key === 'Space') {
-      e.preventDefault()
-      const input = e.currentTarget
-      const start = input.selectionStart || 0
-      const end = input.selectionEnd || 0
-      const currentValue = slug
-      
-      // Insert hyphen at cursor position
-      const newValue = currentValue.substring(0, start) + '-' + currentValue.substring(end)
-      const normalized = normalizeSlug(newValue)
-      
-      setSlug(normalized)
-      lastNormalizedValueRef.current = normalized
-      
-      // Set cursor position after the hyphen
-      setTimeout(() => {
-        if (slugInputRef.current) {
-          const textBeforeCursor = newValue.substring(0, start + 1)
-          const normalizedBefore = normalizeSlug(textBeforeCursor)
-          const newPosition = Math.min(normalizedBefore.length, normalized.length)
-          slugInputRef.current.setSelectionRange(newPosition, newPosition)
-        }
-      }, 0)
+      // Let the default behavior happen, then we'll ensure selection in onInput
       return
     }
     
@@ -108,6 +81,8 @@ function App() {
     if ((e.metaKey || e.ctrlKey) && ['c', 'v', 'x', 'z', 'y'].includes(e.key)) {
       return
     }
+    
+    // Let space key go through - it will be converted to hyphen in handleSlugInput
   }
 
   const handleSlugPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
@@ -143,7 +118,7 @@ function App() {
       <div className="demo-container">
         
         <div className="demo-section">
-          <PromptInput onSend={handleSend} />
+          {/* <PromptInput onSend={handleSend} /> */}
           
           {/* Slug field */}
           <div className="flex flex-col gap-2">

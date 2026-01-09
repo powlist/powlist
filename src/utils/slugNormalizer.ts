@@ -18,6 +18,15 @@ export function normalizeSlug(input: string, maxLength: number = 120): string {
   // 3. Lowercase everything
   normalized = normalized.toLowerCase()
 
+  // Detect if input has trailing whitespace (before conversion)
+  // This helps preserve trailing hyphens that come from trailing spaces
+  const hasTrailingWhitespace = /[\s_]+$/.test(normalized)
+  
+  // Detect if user manually typed a hyphen at the start or end
+  // (not from whitespace conversion)
+  const hasLeadingHyphen = normalized.startsWith('-') && !/^[\s_]+/.test(input)
+  const hasTrailingHyphen = normalized.endsWith('-') && !/[\s_]+$/.test(input)
+
   // 4. Convert whitespace and underscore to hyphen
   normalized = normalized.replace(/[\s_]+/g, '-')
 
@@ -41,6 +50,23 @@ export function normalizeSlug(input: string, maxLength: number = 120): string {
   // This allows users to type "mens/" and continue with "shoes" to make "mens/shoes"
   if (hasTrailingSlash && normalized.length > 0 && !normalized.endsWith('/')) {
     normalized = normalized + '/'
+  }
+  
+  // Restore leading hyphen if user manually typed it
+  if (hasLeadingHyphen && !normalized.startsWith('-')) {
+    normalized = '-' + normalized
+  }
+  
+  // Restore trailing hyphen if the original input had trailing whitespace or manually typed hyphen
+  // This allows users to type "hello " and see "hello-" while typing, or type "hello-" manually
+  if ((hasTrailingWhitespace || hasTrailingHyphen) && !normalized.endsWith('-') && !normalized.endsWith('/')) {
+    if (normalized.length === 0) {
+      // If normalized is empty (e.g., input was just a space or hyphen), return a single hyphen
+      normalized = '-'
+    } else {
+      // Otherwise, append hyphen to preserve the trailing space that was converted or manually typed hyphen
+      normalized = normalized + '-'
+    }
   }
 
   // 10. Max length enforcement
