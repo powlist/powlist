@@ -14,6 +14,7 @@ interface ContextPopoverProps {
   onItemSelect: (item: string) => void;
   searchValue: string;
   onSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onFileAttach?: (files: File[]) => void;
   className?: string;
 }
 
@@ -79,6 +80,7 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
   onItemSelect, 
   searchValue, 
   onSearchChange,
+  onFileAttach,
   className = ''
 }) => {
   const popoverRef = useRef<HTMLDivElement>(null)
@@ -287,14 +289,12 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
   }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      console.log('File selected:', file.name)
-      // For now, just log the file
-      alert(`File selected: ${file.name}`)
-      // Reset the input
-      event.target.value = ''
+    const files = event.target.files
+    if (files && files.length > 0) {
+      onFileAttach?.(Array.from(files))
+      onClose()
     }
+    event.target.value = ''
   }
 
   const handleGoogleDriveClick = () => {
@@ -314,6 +314,7 @@ const ContextPopover: React.FC<ContextPopoverProps> = ({
         onChange={handleFileChange}
         className="hidden"
         accept="*/*"
+        multiple
       />
 
       {/* Search input */}

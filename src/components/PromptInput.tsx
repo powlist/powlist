@@ -36,6 +36,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
   const [showContextPopover, setShowContextPopover] = useState(false)
   const [contextSearch, setContextSearch] = useState('')
   const [selectedContexts, setSelectedContexts] = useState<string[]>([])
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([])
   const [pillWidths, setPillWidths] = useState<Record<number, number>>({})
   const [focusAfterContextSelect, setFocusAfterContextSelect] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -241,7 +242,8 @@ const PromptInput: React.FC<PromptInputProps> = ({
       
       onSend(messageToSend)
       setValue('')
-      setSelectedContexts([]) // Clear selected contexts after sending
+      setSelectedContexts([])
+      setAttachedFiles([])
     }
   }
 
@@ -326,6 +328,20 @@ const PromptInput: React.FC<PromptInputProps> = ({
     setSelectedContexts(prev => prev.filter(item => item !== itemToRemove))
   }
 
+  const handleFileAttach = (files: File[]) => {
+    setAttachedFiles(prev => [...prev, ...files])
+  }
+
+  const handleRemoveFile = (indexToRemove: number) => {
+    setAttachedFiles(prev => prev.filter((_, i) => i !== indexToRemove))
+  }
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
+
   const handleRefine = () => {
     if (value.trim().length >= 3) {
       const newSuggestion = generateSuggestion(value)
@@ -365,30 +381,44 @@ const PromptInput: React.FC<PromptInputProps> = ({
         `} 
         onClick={handleContainerClick}
       >
-      {/* Context pills row */}
-      {selectedContexts.length > 0 && (
+      {/* Context + file pills row */}
+      {(selectedContexts.length > 0 || attachedFiles.length > 0) && (
         <div className="flex items-center gap-1 flex-wrap pb-3">
           {/* User-selected context pills */}
           {selectedContexts.map((context, index) => {
-          const category = getContextCategory(context)
-          
-          return (
+            const category = getContextCategory(context)
+            return (
+              <Pill
+                key={`ctx-${index}`}
+                ref={(el) => { pillRefs.current[index] = el }}
+                variant="removable"
+                showRemove
+                onRemove={() => handleRemoveContext(context)}
+                icon={category.icon}
+                iconColor={category.iconColor}
+                style={{
+                  width: pillWidths[index] ? `${pillWidths[index]}px` : 'auto'
+                }}
+              >
+                {context}
+              </Pill>
+            )
+          })}
+
+          {/* Attached file pills */}
+          {attachedFiles.map((file, index) => (
             <Pill
-              key={index}
-              ref={(el) => { pillRefs.current[index] = el }}
+              key={`file-${index}`}
               variant="removable"
               showRemove
-              onRemove={() => handleRemoveContext(context)}
-              icon={category.icon}
-              iconColor={category.iconColor}
-              style={{
-                width: pillWidths[index] ? `${pillWidths[index]}px` : 'auto'
-              }}
+              onRemove={() => handleRemoveFile(index)}
+              icon="IconPaperclip"
+              iconColor="#6B7280"
+              removeTooltip="Remove file"
             >
-              {context}
+              {`${file.name} · ${formatFileSize(file.size)}`}
             </Pill>
-          )
-        })}
+          ))}
         </div>
       )}
 
@@ -399,6 +429,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
         onItemSelect={handleContextItemSelect}
         searchValue={contextSearch}
         onSearchChange={handleContextSearch}
+        onFileAttach={handleFileAttach}
       />
       
       {/* Message text area */}
